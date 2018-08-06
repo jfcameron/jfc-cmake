@@ -117,9 +117,9 @@ function(jfc_parse_arguments)
             if (_s GREATER 0)
                 set(${_prefix}${name} "${_ARG_${name}}" PARENT_SCOPE)
 
-                if (NOT ${bNoPrefix})
-                    jfc_log(STATUS "${name}" "${_ARG_${name}}") #The leak is revealedhere. There is sometghing wrong with this function
-                endif() 
+                #if (NOT ${bNoPrefix})
+                #    jfc_log(STATUS "${name}" "${_ARG_${name}}") #The leak is revealedhere. There is sometghing wrong with this function
+                #endif() 
             endif()
         endforeach()
     endmacro()
@@ -387,12 +387,12 @@ function(jfc_project aType) # library | executable
         )
         set(_project_template_absolute_path "${JFC_LIBRARY_PROJECT_TEMPLATE_ABSOLUTE_PATH}")
 
-        jfc_parse_arguments(${ARGV}
+        #[[jfc_parse_arguments(${ARGV}
             REQUIRED_SINGLE_VALUES ${_required_simple_fields} #no leaks
             SINGLE_VALUES          ${_optional_simple_fields} #no leaks
             REQUIRED_LISTS         ${_required_list_fields}   #no leaks
             LISTS "PRIVATE_INCLUDE_DIRECTORIES" "PUBLIC_INCLUDE_DIRECTORIES" "LIBRARIES" #"PRIVATE_INCLUDE_DIRECTORIES" #"PUBLIC_INCLUDE_DIRECTORIES" #"LIBRARIES" # oh _no_....
-        )
+        )]]
 
         #jfc_print_all_variables()
 

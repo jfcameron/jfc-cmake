@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
 include_guard(DIRECTORY)
 
+include("${CMAKE_CURRENT_LIST_DIR}/modules/add_tests/add_tests.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/add_submodule_dependencies/add_submodule_dependencies.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/debug/debug.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/directories/directories.cmake")
@@ -16,29 +17,6 @@ include("${CMAKE_CURRENT_LIST_DIR}/modules/parse_arguments/parse_arguments.cmake
 include("${CMAKE_CURRENT_LIST_DIR}/modules/project/project.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/require_program/require_program.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/vulkan_compile_GLSL_to_SPIR-V/vulkan_compile_GLSL_to_SPIR-V.cmake")
-
-#================================================================================================
-# Unit tests
-#================================================================================================
-# @TEST_SOURCE_LIST
-# @C++_STANDARD required iso langauge standard for C++ 
-# @C_STANDARD required iso language standard for C
-function(jfc_add_tests)
-    set(TAG "TEST")
-
-    jfc_log(STATUS ${TAG} "this is not completed at all")
-
-    jfc_parse_arguments(${ARGV}
-        REQUIRED_SINGLE_VALUES
-            C++_STANDARD
-            C_STANDARD
-        REQUIRED_LISTS
-            TEST_SOURCE_LIST
-    )
-
-    # get catch2 -> this is dictated by jfccmake, not up to the using project
-    # generate the tests.cpp file somehwere in bin dir by grabbing and populating tests.cpp.in in jfccmake module
-endfunction()
 
 #================================================================================================
 # Utilities

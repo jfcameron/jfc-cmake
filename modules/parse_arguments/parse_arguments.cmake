@@ -33,11 +33,12 @@ function(jfc_parse_arguments)
 
     set(NULL)
     set(_MULTI_VALUE_ARGS
-        OPTIONS    
-        SINGLE_VALUES          
-        LISTS 
-        REQUIRED_SINGLE_VALUES 
-        REQUIRED_LISTS)
+            OPTIONS    
+            SINGLE_VALUES          
+            LISTS 
+            REQUIRED_SINGLE_VALUES 
+            REQUIRED_LISTS
+    )
 
     set(_argv_passthrough)
     foreach(_arg ${ARGV})
@@ -57,6 +58,39 @@ function(jfc_parse_arguments)
 
     cmake_parse_arguments("_ARG" "${NULL}" "${NULL}" "${_MULTI_VALUE_ARGS}" ${ARGN})
 
+    set(all_required_args ${_ARG_REQUIRED_SINGLE_VALUES}${_ARG_REQUIRED_LISTS})
+    set(all_optional_args ${_ARG_OPTIONS}${_ARG_SINGLE_VALUES}${_ARG_LISTS})
+
+    set(_required_only_argv_passthrough)
+    set(_optional_only_argv_passthrough)
+
+    set(_mode "required") # required | optional
+    foreach(_arg ${_argv_passthrough})
+        set(type "value")
+
+        foreach(_required ${all_required_args})
+            if ("${_required}" STREQUAL "${_arg}")
+                set(type "required")
+                set(_mode "required")
+            endif()
+        endforeach()
+
+        if ("${type}" STREQUAL "value")
+            foreach(_optional ${all_optional_args})
+                if ("${_optional}" STREQUAL "${_arg}")
+                    set(type "optional" )
+                    set(_mode "optional")
+                endif()
+            endforeach()
+        endif()
+
+        if ("${_mode}" STREQUAL "required")
+            list(APPEND _required_only_argv_passthrough "${_arg}")
+        elseif ("${_mode}" STREQUAL "optional")
+            list(APPEND _optional_only_argv_passthrough "${_arg}")
+        endif()
+    endforeach()
+
     macro(_promote_args_to_parent_scope argType bNoPrefix)
         if (NOT ${bNoPrefix})
             set(_prefix "_ARG_")
@@ -67,20 +101,16 @@ function(jfc_parse_arguments)
 
             if (_s GREATER 0)
                 set(${_prefix}${name} "${_ARG_${name}}" PARENT_SCOPE)
-
-                #if (NOT ${bNoPrefix})
-                #    jfc_log(STATUS "${name}" "${_ARG_${name}}") #The leak is revealedhere. There is sometghing wrong with this function
-                #endif() 
             endif()
         endforeach()
     endmacro()
 
-    # Generate & assert requireds
     function(_required_args_imp)
+        set(_OPTIONS_ARGS     "")
         set(_ONE_VALUE_ARGS   "${_ARG_REQUIRED_SINGLE_VALUES}")
         set(_MULTI_VALUE_ARGS "${_ARG_REQUIRED_LISTS}"        )
 
-        set(_ONE_VALUE_ARGS   "${_ARG_REQUIRED_SINGLE_VALUES}" PARENT_SCOPE) # Must be promoted to index output of this function in parent function
+        set(_ONE_VALUE_ARGS   "${_ARG_REQUIRED_SINGLE_VALUES}" PARENT_SCOPE)
         set(_MULTI_VALUE_ARGS "${_ARG_REQUIRED_LISTS}"         PARENT_SCOPE)
 
         cmake_parse_arguments("_ARG" "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
@@ -105,15 +135,14 @@ function(jfc_parse_arguments)
             _promote_args_to_parent_scope("${argType}" FALSE)
         endmacro()
 
-        _validate_and_promote_args_to_parent_scope(_ONE_VALUE_ARGS)
-        _validate_and_promote_args_to_parent_scope(_MULTI_VALUE_ARGS)
+        _validate_and_promote_args_to_parent_scope(_ONE_VALUE_ARGS FALSE)
+        _validate_and_promote_args_to_parent_scope(_MULTI_VALUE_ARGS FALSE)
     endfunction()
-    _required_args_imp(${_argv_passthrough})
+    _required_args_imp(${_required_only_argv_passthrough})
 
     _promote_args_to_parent_scope(_ONE_VALUE_ARGS TRUE)
     _promote_args_to_parent_scope(_MULTI_VALUE_ARGS TRUE)
 
-    # Generate optionals
     function(_optional_args_imp)
         set(_OPTIONS_ARGS     "${_ARG_OPTIONS}")
         set(_ONE_VALUE_ARGS   "${_ARG_SINGLE_VALUES}")
@@ -129,7 +158,7 @@ function(jfc_parse_arguments)
         _promote_args_to_parent_scope(_ONE_VALUE_ARGS FALSE)
         _promote_args_to_parent_scope(_MULTI_VALUE_ARGS FALSE)
     endfunction()
-    _optional_args_imp(${_argv_passthrough})
+    _optional_args_imp(${_optional_only_argv_passthrough})
 
     _promote_args_to_parent_scope(_OPTIONS_ARGS TRUE)
     _promote_args_to_parent_scope(_ONE_VALUE_ARGS TRUE)

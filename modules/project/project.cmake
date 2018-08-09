@@ -1,3 +1,9 @@
+# © 2018 Joseph Cameron - All Rights Reserved
+
+cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+
+include_guard(DIRECTORY)
+
 #================================================================================================
 # Projects
 #================================================================================================
@@ -42,11 +48,11 @@ function(jfc_project aType) # library | executable
         )
         set(_project_template_absolute_path "${JFC_LIBRARY_PROJECT_TEMPLATE_ABSOLUTE_PATH}")
 
-        #[[jfc_parse_arguments(${ARGV}
-            REQUIRED_SINGLE_VALUES ${_required_simple_fields} #no leaks
-            SINGLE_VALUES          ${_optional_simple_fields} #no leaks
-            REQUIRED_LISTS         ${_required_list_fields}   #no leaks
-            LISTS "PRIVATE_INCLUDE_DIRECTORIES" "PUBLIC_INCLUDE_DIRECTORIES" "LIBRARIES" #"PRIVATE_INCLUDE_DIRECTORIES" #"PUBLIC_INCLUDE_DIRECTORIES" #"LIBRARIES" # oh _no_....
+        #[[jfc_parse_arguments(${ARGV} # Not begin used.. should change to this instead of the by-hand stuff below
+            REQUIRED_SINGLE_VALUES ${_required_simple_fields} 
+            SINGLE_VALUES          ${_optional_simple_fields} 
+            REQUIRED_LISTS         ${_required_list_fields}   
+            LISTS                  ${_optional_list_fields}
         )]]
 
         #jfc_print_all_variables()

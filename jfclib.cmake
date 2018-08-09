@@ -9,6 +9,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/modules/debug/debug.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/directories/directories.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/emscripten_generate_index_html/emscripten_generate_index_html.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/generate_buildinfo/generate_buildinfo.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/modules/generate_documentation_doxygen/generate_documentation_doxygen.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/generate_readme_md/generate_readme_md.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/git/git.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/parse_arguments/parse_arguments.cmake")
@@ -40,42 +41,65 @@ function(jfc_add_tests)
 endfunction()
 
 #================================================================================================
-# Documentation: Doxygen
+# Utilities
 #================================================================================================
-# TODO: verify, consider changing
-function(jfc_generate_documentation_doxygen)
-    set(TAG "documentation")
+# Convert a list to a string.
+# @INPUT the list
+# @OUTPUT the name of the output string
+# @DELIMITER char|char sequence used to render the item delimiter (;)
+function(jfc_list_to_string)
+    jfc_parse_arguments(${ARGV}
+        REQUIRED_LISTS
+            INPUT
+        REQUIRED_SINGLE_VALUES
+            OUTPUT
+            DELIMITER
+    )
 
-    find_program(DOXYGEN doxygen)
+    set(_output)
+    
+    foreach(_item ${INPUT})
+        string(CONCAT _output "${_output}" "${DELIMITER}" "${_item}")
+    endforeach()
 
-    if(NOT DOXYGEN)
-        jfc_log(FATAL_ERROR ${TAG} "doxygen not found! It is required to generate documentation.")
-    else()
-        set(DOXY_CONFIG_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-        set(DOXY_RESOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/resources")
-        set(DOXY_CONFIG_FILENAME "doxy.config")
-
-        jfc_directory(basename ${CMAKE_CURRENT_LIST_DIR} CURRENT_DIR_BASENAME)
-
-        configure_file(${DOXY_CONFIG_DIR}/${DOXY_CONFIG_FILENAME}.in 
-            ${CMAKE_CURRENT_SOURCE_DIR}/${DOXY_CONFIG_FILENAME} @ONLY)
-
-        execute_process(COMMAND ${DOXYGEN} ${DOXY_CONFIG_FILENAME}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            RESULT_VARIABLE DOXYGEN_RETURN_VALUE
-            OUTPUT_VARIABLE DOXYGEN_ERRORS)
-
-        if (DOXYGEN_RETURN_VALUE)
-            jfc_log(FATAL_ERROR ${TAG} "Doxygen failed: ${DOXYGEN_ERRORS}")
-        else()
-            jfc_log(STATUS ${TAG} "Doxygen successfully completed")
-        endif()
-        
-        file(REMOVE "${CMAKE_CURRENT_SOURCE_DIR}/${DOXY_CONFIG_FILENAME}")
-    endif()
+    set(${OUTPUT} ${_output} PARENT_SCOPE)
 endfunction()
 
-#jfc_generate_documentation_doxygen()
+#[[
+# TODO : This function has a logic error
+# Convert a string to a list.
+# @INPUT the string
+# @OUTPUT the name of the output list
+# @DELIMITER char|char sequence that separates each item in the string (e.g: , or ; etc)
+function(jfc_string_to_list)
+    jfc_parse_arguments(${ARGV}
+        REQUIRED_LISTS
+            INPUT
+        REQUIRED_SINGLE_VALUES
+            OUTPUT
+            DELIMITER
+    )
+
+    set(_output)
+
+    while(TRUE)
+        string(FIND "${INPUT}" "${DELIMITER}" _i)
+
+        if(${_i} LESS 0)
+            break()
+        endif()
+
+        string(SUBSTRING "${INPUT}" 0 ${_i} _item)
+
+        math(EXPR _i "${_i}+1")
+
+        string(SUBSTRING "${INPUT}" ${_i} -1 INPUT)
+
+        list(APPEND _output ${_item})
+    endwhile()
+
+    set(${OUTPUT} ${_output} PARENT_SCOPE)
+endfunction()]]
 
 #================================================================================================
 # Formatting: uncrustify

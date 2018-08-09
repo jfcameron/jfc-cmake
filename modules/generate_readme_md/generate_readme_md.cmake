@@ -2,7 +2,6 @@
 # Documentation: Readme.md
 #================================================================================================
 set(JFC_README_TEMPLATE_ABSOLUTE_PATH ${CMAKE_CURRENT_LIST_DIR}/README.md.in)
-set(JFC_PROJECT_ROOT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Generates a readme.md, useful for github projects
 # @DESCRIPTION required, description of the project
@@ -17,6 +16,9 @@ function(jfc_generate_readme_md)
         LISTS
             IMAGES
     )
+
+    jfc_git(COMMAND rev-parse --show-toplevel
+        OUTPUT JFC_PROJECT_ROOT_DIRECTORY)
 
     jfc_directory(BASENAME ${JFC_PROJECT_ROOT_DIRECTORY} REPO_NAME)
 

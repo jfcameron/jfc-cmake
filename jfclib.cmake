@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 include_guard(DIRECTORY)
 
 include("${CMAKE_CURRENT_LIST_DIR}/modules/add_tests/add_tests.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/modules/add_submodule_dependencies/add_submodule_dependencies.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/modules/add_dependencies/add_dependencies.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/debug/debug.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/directories/directories.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/emscripten_generate_index_html/emscripten_generate_index_html.cmake")

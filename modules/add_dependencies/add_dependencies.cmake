@@ -4,43 +4,58 @@ cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
 include_guard(DIRECTORY)
 
-function(jfc_add_dependencies) # jfc_build_submodule_dependencies
-    jfc_parse_arguments(${ARGV}
-        LISTS
-            GIT_SUBMODULES
-            RELEASES
-    )
-
+function(jfc_add_dependencies)
     set(TAG "dependency")
     
-    function(_add_submodule aName)
+    function(_add_dependency aName)
         if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${aName}.cmake)
             jfc_log(FATAL_ERROR ${TAG} "${CMAKE_CURRENT_SOURCE_DIR}/${aName}.cmake does not exist. This is required to instruct the loader how to build dependency \"${aName}\".")
         endif()
 
-        #jfc_git(COMMAND submodule update --init -- ${CMAKE_CURRENT_SOURCE_DIR}/${aName}) 
+        set(JFC_DEPENDENCY_NAME "${aName}") # remove?
+        project(${aName})
 
-        set(JFC_DEPENDENCY_NAME "${aName}")
+        function(jfc_set_dependency_symbols)
+            jfc_parse_arguments(${ARGV}
+                REQUIRED_LISTS
+                    INCLUDE_PATHS
+                LISTS
+                    LIBRARIES
+            )
+
+            set(${JFC_DEPENDENCY_NAME}_INCLUDE_DIR
+                "${INCLUDE_PATHS}"
+                CACHE PATH "${JFC_DEPENDENCY_NAME}_INCLUDE_DIR include directory" FORCE)
+
+            set(${JFC_DEPENDENCY_NAME}_LIBRARIES
+                "${LIBRARIES}"
+                CACHE PATH "${JFC_DEPENDENCY_NAME}_LIBRARIES library object list" FORCE)
+
+            set(_dependencies_are_set TRUE PARENT_SCOPE)
+        endfunction()
 
         include("${aName}.cmake")
 
-        # TODO: these should be promoted
-        if (NOT DEFINED ${aName}_LIBRARIES)
-            jfc_log(WARNING ${TAG} "${aName}.cmake did not define a variable \"${aName}_LIBRARIES\". Is it header only?")
-        endif()
-
-        if (NOT DEFINED ${aName}_INCLUDE_DIR)
-            jfc_log(FATAL_ERROR ${TAG} "${aName}.cmake did not define a variable \"${aName}_INCLUDE_DIR\".")
+        if (NOT _dependencies_are_set)
+            jfc_log(FATAL_ERROR ${TAG} "${aName}.cmake must call jfc_set_dependency_symbols with LIBRARIES and optional INCLUDE_PATHS.")
         endif()
 
         jfc_log(STATUS ${TAG} "Done processing submodule dependency \"${aName}\". ${aName}_INCLUDE_DIR: ${${aName}_INCLUDE_DIR}, ${aName}_LIBRARIES: ${${aName}_LIBRARIES}")
     endfunction()
+    
+    function(jfc_dependency_return_include_paths)
+        set(${JFC_DEPENDENCY_NAME}_INCLUDE_DIR
+            "${ARGV}"
+            CACHE PATH "${JFC_DEPENDENCY_NAME}_INCLUDE_DIR include directory" FORCE)
+    endfunction()
 
-    foreach(_submodule ${GIT_SUBMODULES})
-        _add_submodule("${_submodule}")
-    endforeach()
+    function(jfc_dependency_return_libraries)
+        set(${JFC_DEPENDENCY_NAME}_LIBRARIES
+            ${ARGV}
+            CACHE PATH "${JFC_DEPENDENCY_NAME}_LIBRARIES library object list" FORCE)
+    endfunction()
 
-    foreach(_release ${RELEASES})
-        _add_release("${_release}")
+    foreach(_dependency ${ARGV})
+        _add_dependency("${_dependency}")
     endforeach()
 endfunction()

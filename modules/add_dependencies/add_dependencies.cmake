@@ -7,7 +7,8 @@ include_guard(DIRECTORY)
 function(jfc_add_dependencies) # jfc_build_submodule_dependencies
     jfc_parse_arguments(${ARGV}
         LISTS
-            GIT_SUBMODULES   
+            GIT_SUBMODULES
+            RELEASES
     )
 
     set(TAG "dependency")
@@ -17,7 +18,7 @@ function(jfc_add_dependencies) # jfc_build_submodule_dependencies
             jfc_log(FATAL_ERROR ${TAG} "${CMAKE_CURRENT_SOURCE_DIR}/${aName}.cmake does not exist. This is required to instruct the loader how to build dependency \"${aName}\".")
         endif()
 
-        jfc_git(COMMAND submodule update --init -- ${CMAKE_CURRENT_SOURCE_DIR}/${aName}) 
+        #jfc_git(COMMAND submodule update --init -- ${CMAKE_CURRENT_SOURCE_DIR}/${aName}) 
 
         set(JFC_DEPENDENCY_NAME "${aName}")
 
@@ -37,5 +38,9 @@ function(jfc_add_dependencies) # jfc_build_submodule_dependencies
 
     foreach(_submodule ${GIT_SUBMODULES})
         _add_submodule("${_submodule}")
+    endforeach()
+
+    foreach(_release ${RELEASES})
+        _add_release("${_release}")
     endforeach()
 endfunction()

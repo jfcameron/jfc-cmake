@@ -12,7 +12,7 @@ function(jfc_add_dependencies)
             jfc_log(FATAL_ERROR ${TAG} "${CMAKE_CURRENT_SOURCE_DIR}/${aName}.cmake does not exist. This is required to instruct the loader how to build dependency \"${aName}\".")
         endif()
 
-        set(JFC_DEPENDENCY_NAME "${aName}") # remove?
+        set(JFC_DEPENDENCY_NAME "${aName}") # remove
         project(${aName})
 
         function(jfc_set_dependency_symbols)

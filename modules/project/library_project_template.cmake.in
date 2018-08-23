@@ -26,10 +26,21 @@ set(${PROJECT_NAME}_INCLUDE_DIRECTORIES
     
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "lib")
 
+#### lib output hacks
+
+#[[set_target_properties(${PROJECT_NAME} 
+    PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY $<1:${PROJECT_BINARY_DIR}> #The generator expression is always true. I use an expression to remove the extra subdirectories present on multi config generators (xcode, vs)
+        LIBRARY_OUTPUT_DIRECTORY $<1:${PROJECT_BINARY_DIR}>
+        ARCHIVE_OUTPUT_DIRECTORY $<1:${PROJECT_BINARY_DIR}>
+)]]
+
 set(${PROJECT_NAME}_LIBRARIES
     ${PROJECT_BINARY_DIR}/lib${PROJECT_NAME}.a
     @LIBRARIES_value@
     CACHE PATH "${PROJECT_NAME}_LIBRARIES: these are the binary files that must be included in downstream projects" FORCE)
+
+#####
 
 #[[function(jfc_generate_cmake_header) #CLEAN THIS UP
     string(RANDOM LENGTH 15 JFC_RANDOM_128BITS)

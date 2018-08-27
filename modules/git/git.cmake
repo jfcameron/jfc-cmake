@@ -23,10 +23,15 @@ function(jfc_git)
             COMMAND
         SINGLE_VALUES
             OUTPUT
+            WORKING_DIRECTORY
     )
 
+    if (NOT WORKING_DIRECTORY)
+        set(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    endif()
+
     execute_process(COMMAND git ${COMMAND}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        WORKING_DIRECTORY ${WORKING_DIRECTORY}
         RESULT_VARIABLE _return_value
         OUTPUT_VARIABLE _output_value
         OUTPUT_STRIP_TRAILING_WHITESPACE)

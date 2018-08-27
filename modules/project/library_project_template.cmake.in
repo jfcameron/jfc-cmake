@@ -40,6 +40,18 @@ set(${PROJECT_NAME}_LIBRARIES
     @LIBRARIES_value@
     CACHE PATH "${PROJECT_NAME}_LIBRARIES: these are the binary files that must be included in downstream projects" FORCE)
 
+add_custom_command(TARGET ${PROJECT_NAME} 
+    POST_BUILD
+        COMMAND 
+            ${CMAKE_COMMAND} -E echo "Output: $<TARGET_FILE:${PROJECT_NAME}>")
+
+add_custom_command(TARGET ${PROJECT_NAME} #this is a workaround for xcode and vs: you end up with a built .a in debug/release dir plus and a copy at the same level for the LIB cache varaibles
+    POST_BUILD
+        COMMAND 
+            ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> "${PROJECT_BINARY_DIR}/$<TARGET_FILE_NAME:${PROJECT_NAME}>"
+)
+
+
 #####
 
 #[[function(jfc_generate_cmake_header) #CLEAN THIS UP

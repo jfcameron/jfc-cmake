@@ -21,6 +21,10 @@ macro(jfc_add_tests)
         REQUIRED_SINGLE_VALUES
             C++_STANDARD
             C_STANDARD
+        LISTS
+            INCLUDE_DIRECTORIES
+            LIBRARIES
+            DEPENDENCIES
         REQUIRED_LISTS
             TEST_SOURCE_FILES
     )
@@ -33,7 +37,11 @@ macro(jfc_add_tests)
     	${TEST_SOURCE_FILES}
         ${JFC_CATCH_CONFIG_ABSOLUTE_PATH})
 
-    target_include_directories(${PROJECT_NAME} PRIVATE "${JFC_CATCH_INCLUDE_DIRECTORY_ABSOLUTE_PATH}")
+    add_dependencies(${PROJECT_NAME} "${DEPENDENCIES}")
+
+    target_include_directories(${PROJECT_NAME} PRIVATE "${JFC_CATCH_INCLUDE_DIRECTORY_ABSOLUTE_PATH};${INCLUDE_DIRECTORIES}")
+
+    target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
     set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD   ${C_STANDARD})
     set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD ${C++_STANDARD})

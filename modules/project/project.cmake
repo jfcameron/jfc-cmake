@@ -40,6 +40,7 @@ function(jfc_project aType) # library | executable
         "PRIVATE_INCLUDE_DIRECTORIES" # Header paths hidden from downstream projects (internal use only)
         "PUBLIC_INCLUDE_DIRECTORIES"  # Header paths accessible (and needed) by downstream projects 
         "LIBRARIES"                   # binary lib files needed by this project (and therefore downstream projects)
+        "DEPENDENCIES"                # list of projects that must be built before this one                            NOT IMPLEMENTED
     )
 
     macro(_library_project)
@@ -164,7 +165,16 @@ function(jfc_project aType) # library | executable
 
         include("${CMAKE_BINARY_DIR}/${NAME_value}.cmake")
 
-        # TODO: think about how to promote all project_* variables.
+        list(LENGTH DEPENDENCIES_value _dep_len)
+
+        # Appends dependencies.. This is ok but would prer to append to the cmake file
+        # TODO: This should be added to the generated doc before the include ^. This makes issues around malformed projects easier to detect.
+        # TODO: source list should be optional, should be appended as are deps below
+        if (NOT "${_dep_len}" EQUAL 0)
+            add_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
+        endif()
+
+        # Promoting project variables
         set(PROJECT_NAME       "${PROJECT_NAME}"       PARENT_SCOPE) # Project vars must be promoted to be accessible in call scope
         set(PROJECT_BINARY_DIR "${PROJECT_BINARY_DIR}" PARENT_SCOPE)
     endmacro()

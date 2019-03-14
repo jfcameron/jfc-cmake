@@ -1,4 +1,4 @@
-set(JFC_BUILDINFO_TEMPLATE_ABSOLUTE_PATH          ${CMAKE_CURRENT_LIST_DIR}/buildinfo.h.in)
+set(JFC_BUILDINFO_TEMPLATE_ABSOLUTE_PATH ${CMAKE_CURRENT_LIST_DIR}/buildinfo.h.in)
 
 function(jfc_generate_cmake_header) #CLEAN THIS UP
     string(RANDOM LENGTH 15 JFC_RANDOM_128BITS)

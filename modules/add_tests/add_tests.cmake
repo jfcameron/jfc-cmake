@@ -11,6 +11,12 @@ set(JFC_TEST_NAME_COUNTER 0)
 
 enable_testing()
 
+# \brief adds a list of unit tests to the current project
+#
+# \detailed uses catch2 cpp unit testing system.
+#
+# TODO: Consider merging this with jfc_project.. although this can be used with vanilla cmake projects.
+#
 # @TEST_SOURCE_FILES list of cpp files containing tests
 # @C++_STANDARD required iso langauge standard for C++ 
 # @C_STANDARD required iso language standard for C
@@ -29,7 +35,7 @@ macro(jfc_add_tests)
             TEST_SOURCE_FILES
     )
 
-    project("TEST${JFC_TEST_NAME_COUNTER}")
+    project("${PROJECT_NAME}_test_${JFC_TEST_NAME_COUNTER}")
 
     math(EXPR JFC_TEST_NAME_COUNTER "${JFC_TEST_NAME_COUNTER}+1")
 
@@ -37,7 +43,13 @@ macro(jfc_add_tests)
     	${TEST_SOURCE_FILES}
         ${JFC_CATCH_CONFIG_ABSOLUTE_PATH})
 
-    add_dependencies(${PROJECT_NAME} "${DEPENDENCIES}")
+    list(LENGTH DEPENDENCIES _dependency_count)
+
+    if (_dependency_count GREATER 0)
+        add_dependencies(${PROJECT_NAME} "${DEPENDENCIES}")
+    endif()
+
+    list(APPEND INCLUDE_DIRECTORIES "${${PROJECT_NAME}_INCLUDE_DIRECTORIES}") #automatically include public header paths from jfc_projects
 
     target_include_directories(${PROJECT_NAME} PRIVATE "${JFC_CATCH_INCLUDE_DIRECTORY_ABSOLUTE_PATH};${INCLUDE_DIRECTORIES}")
 
@@ -52,3 +64,4 @@ macro(jfc_add_tests)
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/
         COMMAND ${CMAKE_CTEST_COMMAND} --verbose)
 endmacro()
+

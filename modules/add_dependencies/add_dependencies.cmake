@@ -56,11 +56,12 @@ function(jfc_add_dependencies)
             jfc_log(FATAL_ERROR ${TAG} "${aName}.cmake must call jfc_set_dependency_symbols with LIBRARIES and optional INCLUDE_PATHS.")
         endif()
 
-        set("${JFC_PROJECT_NAME}_INCLUDE_DIR" 
-            "${${JFC_PROJECT_NAME}_INCLUDE_DIR};${${PROJECT_NAME}_INCLUDE_PATHS}")
+        #jfc_log(FATAL_ERROR "BLIPBLAPLOP" "${${JFC_PROJECT_NAME}_INCLUDE_DIRECTORIES}") # <- This shows 
+        #set("${JFC_PROJECT_NAME}_INCLUDE_DIRECTORIES" 
+        #    "${${JFC_PROJECT_NAME}_INCLUDE_DIRECTORIES};${${PROJECT_NAME}_INCLUDE_PATHS}") # This is not working
         
-        set("${JFC_PROJECT_NAME}_LIBRARIES"
-            "${${JFC_PROJECT_NAME}_LIBRARIES};${${PROJECT_NAME}_LIBRARIES}")
+        #set("${JFC_PROJECT_NAME}_LIBRARIES"
+        #    "${${JFC_PROJECT_NAME}_LIBRARIES};${${PROJECT_NAME}_LIBRARIES}" FORCE) # This is not working. probably order of operations
 
         jfc_log(STATUS ${TAG} "Done processing submodule dependency \"${aName}\". ${aName}_INCLUDE_DIR: ${${aName}_INCLUDE_DIR}, ${aName}_LIBRARIES: ${${aName}_LIBRARIES}")
     endfunction()

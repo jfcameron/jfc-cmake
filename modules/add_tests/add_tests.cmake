@@ -64,7 +64,7 @@ macro(jfc_add_tests)
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/
         COMMAND ${CMAKE_CTEST_COMMAND} --verbose)
     
-    # PRINTING COVERAGE -- WARNING HARD CODED FOR XCODE STUFF
+    #[[# PRINTING COVERAGE -- WARNING HARD CODED FOR XCODE STUFF
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-instr-generate -fcoverage-mapping") #switch to set property call
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
     
@@ -74,7 +74,7 @@ macro(jfc_add_tests)
     
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/
-        COMMAND xcrun llvm-cov show "./${PROJECT_NAME}" -instr-profile=default.profdata -show-line-counts-or-regions -output-dir=llvm-cov -format="html") #hmmm 
+        COMMAND xcrun llvm-cov show "./${PROJECT_NAME}" -instr-profile=default.profdata -show-line-counts-or-regions -output-dir=llvm-cov -format="html") #hmmm ]]
     # # # # # # # # # # # # # # # # # # # # # # #  
 endmacro()
 

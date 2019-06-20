@@ -7,14 +7,72 @@
 
 namespace type
 {
-    using floating_point = std::tuple<float, double, long double>;
+    using floating_point = std::tuple<
+        float, double, long double
+    >;
+
+    using signed_integral = std::tuple<
+        char,
+        short, short int, signed short,
+        int, signed, signed int,
+        long, long int, signed long, signed long int, 
+        long long, long long int, signed long long, signed long long int
+    >;
+
+    using unsigned_integral = std::tuple<
+        unsigned char,
+        unsigned short, unsigned short int,
+        unsigned int,
+        unsigned long, unsigned long int,
+        unsigned long long, unsigned long long int
+    >;
 
     using integral = std::tuple<
-        char, unsigned char,
-        short, short int, signed short, unsigned short, unsigned short int,
-        int, signed, signed int, unsigned, unsigned int,
-        long, long int, signed long, signed long int, unsigned long, unsigned long int,
-        long long, long long int, signed long long, signed long long int, unsigned long long, unsigned long long int
+        char,
+        short, short int, signed short,
+        int, signed, signed int,
+        long, long int, signed long, signed long int, 
+        long long, long long int, signed long long, signed long long int,
+        
+        unsigned char,
+        unsigned short, unsigned short int,
+        unsigned int,
+        unsigned long, unsigned long int,
+        unsigned long long, unsigned long long int
+    >;
+    
+    using signed_arithmetic = std::tuple<
+        float, double, long double,
+        
+        char,
+        short, short int, signed short,
+        int, signed, signed int,
+        long, long int, signed long, signed long int, 
+        long long, long long int, signed long long, signed long long int
+    >;
+
+    using unsigned_arithmetic = std::tuple<
+        char,
+        short, short int, signed short,
+        int, signed, signed int,
+        long, long int, signed long, signed long int, 
+        long long, long long int, signed long long, signed long long int
+    >;
+
+    using arithmetic = std::tuple<
+        float, double, long double,
+        
+        char,
+        short, short int, signed short,
+        int, signed, signed int,
+        long, long int, signed long, signed long int, 
+        long long, long long int, signed long long, signed long long int,
+        
+        unsigned char,
+        unsigned short, unsigned short int,
+        unsigned int,
+        unsigned long, unsigned long int,
+        unsigned long long, unsigned long long int
     >;
 }
 

@@ -12,7 +12,8 @@ function(jfc_require_program aProgramName)
 
     find_program(${_UpperProgramName} NAMES "${aProgramName}")
 
-    if (${_UpperProgramName} STREQUAL "${_UpperProgramName}-NOTFOUND")
+    if(${_UpperProgramName} STREQUAL "${_UpperProgramName}-NOTFOUND")
         jfc_log(FATAL_ERROR ${TAG} "required program \"${aProgramName}\" could not be found!")
     endif()
 endfunction()
+

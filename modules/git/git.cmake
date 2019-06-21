@@ -36,7 +36,7 @@ function(jfc_git)
         OUTPUT_VARIABLE _output_value
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    if (_return_value GREATER 0)
+    if (NOT _return_value EQUAL 0)
         string(REPLACE ";" " " aGitCommand "${COMMAND}")
 
         jfc_log(FATAL_ERROR ${TAG} "the command \"git ${aGitCommand}\" failed with return value of \"${_return_value}\"")

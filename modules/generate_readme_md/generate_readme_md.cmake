@@ -14,8 +14,7 @@ function(jfc_generate_readme_md)
         SINGLE_VALUES
             DESCRIPTION
         LISTS
-            IMAGES
-    )
+            IMAGES)
 
     jfc_git(COMMAND rev-parse --show-toplevel
         OUTPUT JFC_PROJECT_ROOT_DIRECTORY)
@@ -29,5 +28,5 @@ function(jfc_generate_readme_md)
     endforeach()
     
     configure_file(${JFC_README_TEMPLATE_ABSOLUTE_PATH} "${JFC_PROJECT_ROOT_DIRECTORY}/README.md" @ONLY)
-
 endfunction()
+

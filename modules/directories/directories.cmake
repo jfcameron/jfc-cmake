@@ -49,3 +49,4 @@ function(jfc_directory)
         _basename(${ARGV})
     endif()
 endfunction()
+

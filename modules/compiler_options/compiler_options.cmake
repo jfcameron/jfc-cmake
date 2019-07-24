@@ -58,10 +58,10 @@ function(jfc_apply_standard_compile_and_link_flags)
         set(_options "")
 
         if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-            set(_options "-pedantic-errors")#;-Wall;-Wextra;-Werror") # force strict iso compliance
-            set(_releaseOptions "${_options};-O2")
-            set(_developOptions "${_options};-O1")
-            set(_debugOptions   "${_developOptions};-Og;-g")
+            #set(_options "-pedantic-errors -Wall -Werror")#;-Wall;-Wextra;-Werror") # force strict iso compliance #-pedantic-errors
+            set(_releaseOptions "${_options} -O2")
+            set(_developOptions "-pedantic-errors -Wall -Werror -Wno-unused-variable") #set(_developOptions "${_options} -O1 -Wno-unused-variable")
+            set(_debugOptions   "${_developOptions} -Og -g")
         elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
             set(_options "/W4;/WX") # force strict iso compliance
             set(_releaseOptions "")
@@ -81,8 +81,8 @@ function(jfc_apply_standard_compile_and_link_flags)
             JFC_LOG(FATAL_ERROR "${TAG}" "${_aBuildType} is not a valid build type. Valid types are: RELEASE, DEVELOP, DEBUG")
         endif()
 
-        set_target_properties(${_aProjectName} PROPERTIES COMPILE_FLAGS "-pedantic-errors -Wall -Werror")
-        #set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS    "-Wall;-Wextra;-Werror")
+        #set_target_properties(${_aProjectName} PROPERTIES COMPILE_FLAGS "${_options}")
+        set_target_properties(${_aProjectName} PROPERTIES COMPILE_FLAGS "-pedantic-errors -Wall -Werror -Wno-unused-variable")
     endif()
 endfunction()
 #jfc_standard_compile_and_link_flags("${JFC_BUILD_TYPE}")

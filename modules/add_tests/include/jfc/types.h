@@ -15,14 +15,14 @@ namespace type
         char,
         short, short int, signed short,
         int, signed, signed int,
-        long, long int, signed long, signed long int, 
+        long, long int, signed long, signed long int
     >;
 
     using unsigned_integral = std::tuple<
         unsigned char,
         unsigned short, unsigned short int,
         unsigned int,
-        unsigned long, unsigned long int,
+        unsigned long, unsigned long int
     >;
 
     using integral = std::tuple<
@@ -34,7 +34,7 @@ namespace type
         unsigned char,
         unsigned short, unsigned short int,
         unsigned int,
-        unsigned long, unsigned long int,
+        unsigned long, unsigned long int
     >;
     
     using signed_arithmetic = std::tuple<
@@ -43,14 +43,14 @@ namespace type
         char,
         short, short int, signed short,
         int, signed, signed int,
-        long, long int, signed long, signed long int, 
+        long, long int, signed long, signed long int
     >;
 
     using unsigned_arithmetic = std::tuple<
         char,
         short, short int, signed short,
         int, signed, signed int,
-        long, long int, signed long, signed long int, 
+        long, long int, signed long, signed long int
     >;
 
     using arithmetic = std::tuple<
@@ -64,7 +64,7 @@ namespace type
         unsigned char,
         unsigned short, unsigned short int,
         unsigned int,
-        unsigned long, unsigned long int,
+        unsigned long, unsigned long int
     >;
 }
 

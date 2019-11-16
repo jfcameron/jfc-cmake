@@ -16,7 +16,6 @@ namespace type
         short, short int, signed short,
         int, signed, signed int,
         long, long int, signed long, signed long int, 
-        long long, long long int, signed long long, signed long long int
     >;
 
     using unsigned_integral = std::tuple<
@@ -24,7 +23,6 @@ namespace type
         unsigned short, unsigned short int,
         unsigned int,
         unsigned long, unsigned long int,
-        unsigned long long, unsigned long long int
     >;
 
     using integral = std::tuple<
@@ -32,13 +30,11 @@ namespace type
         short, short int, signed short,
         int, signed, signed int,
         long, long int, signed long, signed long int, 
-        long long, long long int, signed long long, signed long long int,
         
         unsigned char,
         unsigned short, unsigned short int,
         unsigned int,
         unsigned long, unsigned long int,
-        unsigned long long, unsigned long long int
     >;
     
     using signed_arithmetic = std::tuple<
@@ -48,7 +44,6 @@ namespace type
         short, short int, signed short,
         int, signed, signed int,
         long, long int, signed long, signed long int, 
-        long long, long long int, signed long long, signed long long int
     >;
 
     using unsigned_arithmetic = std::tuple<
@@ -56,7 +51,6 @@ namespace type
         short, short int, signed short,
         int, signed, signed int,
         long, long int, signed long, signed long int, 
-        long long, long long int, signed long long, signed long long int
     >;
 
     using arithmetic = std::tuple<
@@ -66,13 +60,11 @@ namespace type
         short, short int, signed short,
         int, signed, signed int,
         long, long int, signed long, signed long int, 
-        long long, long long int, signed long long, signed long long int,
         
         unsigned char,
         unsigned short, unsigned short int,
         unsigned int,
         unsigned long, unsigned long int,
-        unsigned long long, unsigned long long int
     >;
 }
 

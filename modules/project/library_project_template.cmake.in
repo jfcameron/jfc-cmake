@@ -26,17 +26,21 @@ set(${PROJECT_NAME}_INCLUDE_DIRECTORIES
     
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "lib")
 
-#### lib output hacks
+# constructing the lib output's filename
+get_property(_prefix TARGET ${PROJECT_NAME} PROPERTY PREFIX)
+get_property(_suffix TARGET ${PROJECT_NAME} PROPERTY SUFFIX)
+get_property(_type TARGET ${PROJECT_NAME} PROPERTY TYPE)
 
-#[[set_target_properties(${PROJECT_NAME} 
-    PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY $<1:${PROJECT_BINARY_DIR}> #The generator expression is always true. I use an expression to remove the extra subdirectories present on multi config generators (xcode, vs)
-        LIBRARY_OUTPUT_DIRECTORY $<1:${PROJECT_BINARY_DIR}>
-        ARCHIVE_OUTPUT_DIRECTORY $<1:${PROJECT_BINARY_DIR}>
-)]]
+if ("${_type}" STREQUAL STATIC_LIBRARY)
+    set(_fileType "${CMAKE_STATIC_LIBRARY_SUFFIX}")
+elseif ("${_type}" STREQUAL SHARED_LIBRARY)
+    set(_fileType "${CMAKE_SHARED_LIBRARY_SUFFIX}")
+endif()
+
+set(_LibraryOutputName "${_prefix}${PROJECT_NAME}${_suffix}${_fileType}")
 
 set(${PROJECT_NAME}_LIBRARIES
-    ${PROJECT_BINARY_DIR}/lib${PROJECT_NAME}.a
+    "${PROJECT_BINARY_DIR}/${_LibraryOutputName}"
     @LIBRARIES_value@
     CACHE PATH "${PROJECT_NAME}_LIBRARIES: these are the binary files that must be included in downstream projects" FORCE)
 

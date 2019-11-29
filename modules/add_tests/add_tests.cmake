@@ -60,10 +60,12 @@ macro(jfc_add_tests)
 
     add_test(${PROJECT_NAME} ${PROJECT_NAME})
 
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    # Should auto run be deleted or should it be optioned?
+    #[[add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/
-        COMMAND ${CMAKE_CTEST_COMMAND} --verbose)
-    
+        COMMAND ${CMAKE_CTEST_COMMAND} --verbose)]]
+
+    # TODO: coverage does not belong here.. its also straightforward enough to do without a cmake module. Think about refactor or delete.
     #[[# PRINTING COVERAGE -- WARNING HARD CODED FOR XCODE STUFF
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-instr-generate -fcoverage-mapping") #switch to set property call
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")

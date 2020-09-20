@@ -168,24 +168,27 @@ function(jfc_project aType) # library | executable
                 endwhile()
             endforeach()
             
-            configure_file(${_project_template_absolute_path} "${CMAKE_BINARY_DIR}/${NAME_value}.cmake" @ONLY)
+            if (TARGET "${NAME_value}")  # THIS IS FINE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+                jfc_log(STATUS ${TAG} "Skipping: ${NAME_value}")
+            else()
+                configure_file(${_project_template_absolute_path} "${CMAKE_BINARY_DIR}/${NAME_value}.cmake" @ONLY)
 
-            include("${CMAKE_BINARY_DIR}/${NAME_value}.cmake")
+                include("${CMAKE_BINARY_DIR}/${NAME_value}.cmake")
 
-            list(LENGTH DEPENDENCIES_value _dep_len)
+                list(LENGTH DEPENDENCIES_value _dep_len)
 
-            # Appends dependencies.. This is ok but would prer to append to the cmake file
-            # TODO: This should be added to the generated doc before the include ^. This makes issues around malformed projects easier to detect.
-            # TODO: source list should be optional, should be appended as are deps below
-            if (NOT "${_dep_len}" EQUAL 0)
-                add_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
+                # Appends dependencies.. This is ok but would prer to append to the cmake file
+                # TODO: This should be added to the generated doc before the include ^. This makes issues around malformed projects easier to detect.
+                # TODO: source list should be optional, should be appended as are deps below
+                if (NOT "${_dep_len}" EQUAL 0)
+                    add_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
+                endif()
+
+                # Promoting project variables
+                set(PROJECT_NAME       "${PROJECT_NAME}"       PARENT_SCOPE) # Project vars must be promoted to be accessible in call scope. They are being "returned" in a saner language
+                set(PROJECT_BINARY_DIR "${PROJECT_BINARY_DIR}" PARENT_SCOPE)
+
             endif()
-
-            # Promoting project variables
-            set(PROJECT_NAME       "${PROJECT_NAME}"       PARENT_SCOPE) # Project vars must be promoted to be accessible in call scope. They are being "returned" in a saner language
-            set(PROJECT_BINARY_DIR "${PROJECT_BINARY_DIR}" PARENT_SCOPE)
-
-            #jfc_log(FATAL_ERROR ${TAG} )
         endmacro()
 
         list(REMOVE_AT ARGV 0)

@@ -21,10 +21,11 @@ include_guard(DIRECTORY)
 #
 function(jfc_add_dependencies)
     set(TAG "dependency")
-    
+
     function(_add_dependency aName)
         jfc_log(STATUS TAG "name: ${aName}")
-        if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${aName}.cmake)
+        if (NOT TARGET "${aName}")
+        #if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${aName}.cmake)
             jfc_log(FATAL_ERROR ${TAG} "${CMAKE_CURRENT_SOURCE_DIR}/${aName}.cmake does not exist. This is required to instruct the loader how to build dependency \"${aName}\".")
         endif()
 

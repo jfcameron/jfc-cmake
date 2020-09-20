@@ -28,7 +28,7 @@ function(jfc_project aType) # library | executable
         #jfc_git("rev-parse HEAD")
         #jfc_log(WARN ${TAG} "${OUTPUT}")
     else() 
-        set(TAG "PROJECT")
+        set(TAG "project")
 
         set(_required_simple_fields
             "NAME"                        # name of the project
@@ -168,9 +168,11 @@ function(jfc_project aType) # library | executable
                 endwhile()
             endforeach()
             
-            if (TARGET "${NAME_value}")  # THIS IS FINE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-                jfc_log(STATUS ${TAG} "Skipping: ${NAME_value}")
+            if (TARGET "${NAME_value}")
+                jfc_log(STATUS ${TAG} "Skipping duplicate project \"${NAME_value}\"")
             else()
+                jfc_log(STATUS ${TAG} "Generating project \"${NAME_value}\"")
+
                 configure_file(${_project_template_absolute_path} "${CMAKE_BINARY_DIR}/${NAME_value}.cmake" @ONLY)
 
                 include("${CMAKE_BINARY_DIR}/${NAME_value}.cmake")

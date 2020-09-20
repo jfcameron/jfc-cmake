@@ -21,7 +21,6 @@ set(JFC_EXECUTABLE_PROJECT_TEMPLATE_ABSOLUTE_PATH ${CMAKE_CURRENT_LIST_DIR}/exec
 #           ${CMAKE_CURRENT_SOURCE_DIR}/main.c
 #   )
 function(jfc_project aType) # library | executable
-    jfc_log(STATUS BLAR "${NAME_value}")
     if (EXISTS "${CMAKE_BINARY_DIR}/${NAME_value}.cmake") # is BIN dir really the safest thing to rely on for build script gen skip?
         jfc_log(WARN ${TAG} "${NAME_value} already exists! skipping...")
     

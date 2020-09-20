@@ -9,7 +9,7 @@ project("@NAME_value@" @EXECUTABLE_PROPERTIES_value@
 add_executable(${PROJECT_NAME} @EXECUTABLE_PARAMETERS@
     @SOURCE_LIST_value@)
 
-#add_dependencies(${PROJECT_NAME} @DEPENDENCIES_value@) # IMPLEMENT THIS
+add_dependencies(${PROJECT_NAME} @DEPENDENCIES_value@)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     @PUBLIC_INCLUDE_DIRECTORIES_value@

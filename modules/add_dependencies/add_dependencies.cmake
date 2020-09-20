@@ -25,7 +25,7 @@ function(jfc_add_dependencies)
     function(_add_dependency aName)
         jfc_log(STATUS TAG "name: ${aName}")
         if (NOT TARGET "${aName}")
-        #if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${aName}.cmake)
+        if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${aName}.cmake)
             jfc_log(FATAL_ERROR ${TAG} "${CMAKE_CURRENT_SOURCE_DIR}/${aName}.cmake does not exist. This is required to instruct the loader how to build dependency \"${aName}\".")
         endif()
 
@@ -66,6 +66,7 @@ function(jfc_add_dependencies)
         #    "${${JFC_PROJECT_NAME}_LIBRARIES};${${PROJECT_NAME}_LIBRARIES}" FORCE) # This is not working. probably order of operations
 
         jfc_log(STATUS ${TAG} "Done processing submodule dependency \"${aName}\". ${aName}_INCLUDE_DIR: ${${aName}_INCLUDE_DIR}, ${aName}_LIBRARIES: ${${aName}_LIBRARIES}")
+        endif()
     endfunction()
     
     function(jfc_dependency_return_include_paths)

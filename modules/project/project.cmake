@@ -171,7 +171,7 @@ function(jfc_project aType) # library | executable
             if (TARGET "${NAME_value}")
                 #jfc_log(STATUS ${TAG} "Skipping duplicate project \"${NAME_value}\"")
             else()
-                jfc_log(STATUS ${TAG} "Generating project \"${NAME_value}\", dir: ${CMAKE_CURRENT_LIST_FILE}")
+                jfc_log(FATAL_ERROR ${TAG} "Generating project \"${NAME_value}\", dir: ${CMAKE_CURRENT_LIST_FILE}")
 
                 configure_file(${_project_template_absolute_path} "${CMAKE_BINARY_DIR}/${NAME_value}.cmake" @ONLY)
 

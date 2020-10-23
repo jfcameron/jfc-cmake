@@ -171,7 +171,7 @@ function(jfc_project aType) # library | executable
             if (TARGET "${NAME_value}")
                 #jfc_log(STATUS ${TAG} "Skipping duplicate project \"${NAME_value}\"")
             else()
-                jfc_log(FATAL_ERROR ${TAG} "Generating project \"${NAME_value}\", dir: ${CMAKE_CURRENT_LIST_FILE}")
+                jfc_log(STATUS ${TAG} "Generating project \"${NAME_value}\", dir: ${CMAKE_CURRENT_LIST_FILE}")
 
                 configure_file(${_project_template_absolute_path} "${CMAKE_BINARY_DIR}/${NAME_value}.cmake" @ONLY)
 
@@ -183,7 +183,10 @@ function(jfc_project aType) # library | executable
                 # TODO: This should be added to the generated doc before the include ^. This makes issues around malformed projects easier to detect.
                 # TODO: source list should be optional, should be appended as are deps below
                 if (NOT "${_dep_len}" EQUAL 0)
+                    jfc_log(STATUS "BLAR" "dependencies: ${DEPENDENCIES}")
                     add_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
+                else()
+                    jfc_log(WARN "BLAR" "no dependencies")
                 endif()
 
                 # Promoting project variables

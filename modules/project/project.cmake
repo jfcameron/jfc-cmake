@@ -183,10 +183,10 @@ function(jfc_project aType) # library | executable
                 # TODO: This should be added to the generated doc before the include ^. This makes issues around malformed projects easier to detect.
                 # TODO: source list should be optional, should be appended as are deps below
                 if (NOT "${_dep_len}" EQUAL 0)
-                    jfc_log(STATUS "BLAR" "dependencies: ${DEPENDENCIES}")
+                    jfc_log(STATUS ${TAG} "dependencies: ${DEPENDENCIES}")
                     add_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
                 else()
-                    jfc_log(WARN "BLAR" "no dependencies")
+                    jfc_log(WARN ${TAG} "no dependencies")
                 endif()
 
                 # Promoting project variables

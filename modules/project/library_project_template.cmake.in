@@ -10,7 +10,7 @@ add_library(${PROJECT_NAME} @TYPE_value@
     @SOURCE_LIST_value@)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-    ${PROJECT_BINARY_DIR}/generatedinclude/
+    ${PROJECT_BINARY_DIR}/generated_include/
     @PUBLIC_INCLUDE_DIRECTORIES_value@
     @PRIVATE_INCLUDE_DIRECTORIES_value@)
 
@@ -20,7 +20,7 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD @C_STANDARD_value@)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD @C++_STANDARD_value@)
 
 set(${PROJECT_NAME}_INCLUDE_DIRECTORIES
-    ${PROJECT_BINARY_DIR}/generatedinclude/
+    ${PROJECT_BINARY_DIR}/generated_include/
     @PUBLIC_INCLUDE_DIRECTORIES_value@
     CACHE PATH "${PROJECT_NAME}_INCLUDE_DIRECTORIES: these are the include directories that must be included in downstream projects" FORCE)
     

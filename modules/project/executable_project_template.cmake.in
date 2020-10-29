@@ -10,6 +10,7 @@ add_executable(${PROJECT_NAME} @EXECUTABLE_PARAMETERS@
     @SOURCE_LIST_value@)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
+    ${PROJECT_BINARY_DIR}/generated_include/
     @PUBLIC_INCLUDE_DIRECTORIES_value@
     @PRIVATE_INCLUDE_DIRECTORIES_value@)
 

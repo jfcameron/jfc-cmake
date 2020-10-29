@@ -13,5 +13,5 @@ function(jfc_generate_cmake_header) #CLEAN THIS UP
         OUTPUT_VARIABLE JFC_GIT_COMMIT_DATE OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     configure_file(${JFC_BUILDINFO_TEMPLATE_ABSOLUTE_PATH}
-        ${PROJECT_BINARY_DIR}/generatedinclude/${PROJECT_NAME}/buildinfo.h @ONLY)
+        ${PROJECT_BINARY_DIR}/generated_include/${PROJECT_NAME}/buildinfo.h @ONLY)
 endfunction()

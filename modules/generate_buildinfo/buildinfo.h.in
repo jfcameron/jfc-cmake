@@ -25,7 +25,8 @@ const char *const @PROJECT_NAME@_BuildInfo_CMake_Version =   "@CMAKE_VERSION@";
 const char *const @PROJECT_NAME@_BuildInfo_CMake_Generator = "@CMAKE_GENERATOR@";
 
 const char *const @PROJECT_NAME@_BuildInfo_Git_Commit = "@JFC_GIT_COMMIT_HASH@";
-const char *const @PROJECT_NAME@_BuildInfo_Git_Date =   "@JFC_GIT_COMMIT_DATE@";
+const char *const @PROJECT_NAME@_BuildInfo_Git_Date = "@JFC_GIT_COMMIT_DATE@";
+const char *const @PROJECT_NAME@_BuildInfo_Git_Remote_URL = "@JFC_GIT_REMOTE_URL@";
 
 const char *const @PROJECT_NAME@_BuildInfo_Random_bits128 = "@JFC_RANDOM_128BITS@";
 

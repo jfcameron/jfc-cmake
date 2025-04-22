@@ -1,4 +1,4 @@
-# © 2018 Joseph Cameron - All Rights Reserved
+# © Joseph Cameron - All Rights Reserved
 
 cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
@@ -14,8 +14,6 @@ enable_testing()
 # \brief adds a list of unit tests to the current project
 #
 # \detailed uses catch2 cpp unit testing system.
-#
-# TODO: Consider merging this with jfc_project.. although this can be used with vanilla cmake projects.
 #
 # @TEST_SOURCE_FILES list of cpp files containing tests
 # @C++_STANDARD required iso langauge standard for C++ 
@@ -59,24 +57,5 @@ macro(jfc_add_tests)
     set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD ${C++_STANDARD})
 
     add_test(${PROJECT_NAME} ${PROJECT_NAME})
-
-    # Should auto run be deleted or should it be optioned?
-    #[[add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/
-        COMMAND ${CMAKE_CTEST_COMMAND} --verbose)]]
-
-    # TODO: coverage does not belong here.. its also straightforward enough to do without a cmake module. Think about refactor or delete.
-    #[[# PRINTING COVERAGE -- WARNING HARD CODED FOR XCODE STUFF
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-instr-generate -fcoverage-mapping") #switch to set property call
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
-    
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/
-        COMMAND xcrun llvm-profdata merge -sparse default.profraw -o default.profdata) #hmmm
-    
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/
-        COMMAND xcrun llvm-cov show "./${PROJECT_NAME}" -instr-profile=default.profdata -show-line-counts-or-regions -output-dir=llvm-cov -format="html") #hmmm ]]
-    # # # # # # # # # # # # # # # # # # # # # # #  
 endmacro()
 

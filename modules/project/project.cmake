@@ -8,6 +8,7 @@ include_guard(DIRECTORY)
 # Projects
 #================================================================================================
 set(JFC_LIBRARY_PROJECT_TEMPLATE_ABSOLUTE_PATH    ${CMAKE_CURRENT_LIST_DIR}/library_project_template.cmake.in)
+set(JFC_INTERFACE_LIBRARY_PROJECT_TEMPLATE_ABSOLUTE_PATH ${CMAKE_CURRENT_LIST_DIR}/interface_library_project_template.cmake.in)
 set(JFC_EXECUTABLE_PROJECT_TEMPLATE_ABSOLUTE_PATH ${CMAKE_CURRENT_LIST_DIR}/executable_project_template.cmake.in)
 
 # TODO: Simplify implementation: make use of jfc_parse_arguments
@@ -52,7 +53,7 @@ function(jfc_project aType) # library | executable
 
         macro(_library_project)
             list(APPEND _required_simple_fields 
-                "TYPE"                    # STATIC | DYNAMIC
+                "TYPE"                    # STATIC | SHARED | INTERFACE
             )
             set(_project_template_absolute_path "${JFC_LIBRARY_PROJECT_TEMPLATE_ABSOLUTE_PATH}")
 
@@ -140,6 +141,16 @@ function(jfc_project aType) # library | executable
                     jfc_log(FATAL_ERROR ${TAG} "${_field} is a required field")
                 endif()
             endforeach()
+
+            if ("${TYPE_value}" STREQUAL "INTERFACE")
+                list(REMOVE_ITEM _required_list_fields "SOURCE_LIST")
+
+                set(_project_template_absolute_path "${JFC_INTERFACE_LIBRARY_PROJECT_TEMPLATE_ABSOLUTE_PATH}")
+
+                if (NOT "${PRIVATE_INCLUDE_DIRECTORIES}" STREQUAL "")
+                    jfc_log(FATAL_ERROR ${TAG} "PRIVATE_INCLUDE_DIRECTORIES has no meaning for an INTERFACE library")
+                endif()
+            endif()
 
             foreach(list ${_required_list_fields})
                 set (list_values ${list})

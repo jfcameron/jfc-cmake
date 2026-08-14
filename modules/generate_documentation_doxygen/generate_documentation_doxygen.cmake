@@ -9,7 +9,6 @@ include_guard(DIRECTORY)
 #================================================================================================
 set(JFC_DOXY_CONFIG_TEMPLATE_ABSOLUTE_PATH ${CMAKE_CURRENT_LIST_DIR}/doxy.config.in)
 
-# TODO: verify, consider changing
 function(jfc_generate_documentation_doxygen)
     set(TAG "documentation")
 
@@ -21,15 +20,22 @@ function(jfc_generate_documentation_doxygen)
             PROJECT_LOGO
         REQUIRED_LISTS
             INCLUDE_DIRECTORIES
+        LISTS
+            EXCLUDE_DIRECTORIES
     )
 
     jfc_list_to_string(INPUT ${INCLUDE_DIRECTORIES}
         DELIMITER " "
         OUTPUT INCLUDE_DIRECTORIES)
+
+    if (EXCLUDE_DIRECTORIES)
+        jfc_list_to_string(INPUT ${EXCLUDE_DIRECTORIES}
+            DELIMITER " "
+            OUTPUT EXCLUDE_DIRECTORIES)
+    endif()
     
     jfc_directory(basename ${CMAKE_CURRENT_LIST_DIR} CURRENT_DIR_BASENAME)
 
-    # calculated
     jfc_git(COMMAND rev-parse HEAD 
         OUTPUT GIT_COMMIT_HASH)
 
@@ -37,7 +43,6 @@ function(jfc_generate_documentation_doxygen)
         OUTPUT _path_to_repo_root)
     jfc_directory(basename ${_path_to_repo_root} GIT_REPO_NAME)
 
-    # work
     configure_file(${JFC_DOXY_CONFIG_TEMPLATE_ABSOLUTE_PATH}
         ${CMAKE_BINARY_DIR}/${CURRENT_DIR_BASENAME}/doxy.config @ONLY)
 
@@ -52,3 +57,4 @@ function(jfc_generate_documentation_doxygen)
         
     file(REMOVE "${CMAKE_CURRENT_SOURCE_DIR}/${DOXY_CONFIG_FILENAME}")
 endfunction()
+

@@ -53,6 +53,18 @@ macro(jfc_add_tests)
 
     target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
+    foreach(_jfc_library ${LIBRARIES})
+        if (NOT TARGET "${_jfc_library}")
+            get_filename_component(_jfc_library_name "${_jfc_library}" NAME_WE)
+
+            string(REGEX REPLACE "^lib" "" _jfc_library_name "${_jfc_library_name}")
+
+            if (TARGET "${_jfc_library_name}")
+                add_dependencies(${PROJECT_NAME} "${_jfc_library_name}")
+            endif()
+        endif()
+    endforeach()
+
     set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD   ${C_STANDARD})
     set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD ${C++_STANDARD})
 

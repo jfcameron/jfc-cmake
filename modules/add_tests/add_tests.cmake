@@ -68,6 +68,6 @@ macro(jfc_add_tests)
     set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD   ${C_STANDARD})
     set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD ${C++_STANDARD})
 
-    add_test(${PROJECT_NAME} ${PROJECT_NAME})
+    add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})
 endmacro()
 

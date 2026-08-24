@@ -1,6 +1,6 @@
 # © Joseph Cameron - All Rights Reserved
 
-cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.21)
 
 include_guard(DIRECTORY)
 
@@ -9,65 +9,68 @@ set(JFC_CATCH_INCLUDE_DIRECTORY_ABSOLUTE_PATH ${CMAKE_CURRENT_LIST_DIR}/include)
 
 set(JFC_TEST_NAME_COUNTER 0)
 
-enable_testing()
+if (NOT CMAKE_SCRIPT_MODE_FILE)
+    enable_testing()
+endif()
 
-# \brief adds a list of unit tests to the current project
-#
-# \detailed uses catch2 cpp unit testing system.
-#
-# @TEST_SOURCE_FILES list of cpp files containing tests
-# @C++_STANDARD required iso langauge standard for C++ 
-# @C_STANDARD required iso language standard for C
 macro(jfc_add_tests)
-    set(TAG "TEST")
-    
     jfc_parse_arguments(${ARGV}
         REQUIRED_SINGLE_VALUES
             C++_STANDARD
-            C_STANDARD
         LISTS
             INCLUDE_DIRECTORIES
             LIBRARIES
             DEPENDENCIES
+        SINGLE_VALUES
+            C_STANDARD
         REQUIRED_LISTS
             TEST_SOURCE_FILES
     )
 
-    project("${PROJECT_NAME}_test_${JFC_TEST_NAME_COUNTER}")
+    set(JFC_TEST_TARGET "${PROJECT_NAME}_test_${JFC_TEST_NAME_COUNTER}")
 
     math(EXPR JFC_TEST_NAME_COUNTER "${JFC_TEST_NAME_COUNTER}+1")
 
-    add_executable(${PROJECT_NAME}
-    	${TEST_SOURCE_FILES}
-        ${JFC_CATCH_CONFIG_ABSOLUTE_PATH})
+    if (NOT TARGET jfc_catch_main)
+        add_library(jfc_catch_main STATIC "${JFC_CATCH_CONFIG_ABSOLUTE_PATH}")
+
+        target_include_directories(jfc_catch_main PUBLIC "${JFC_CATCH_INCLUDE_DIRECTORY_ABSOLUTE_PATH}")
+
+        set_property(TARGET jfc_catch_main PROPERTY CXX_STANDARD 17)
+        set_property(TARGET jfc_catch_main PROPERTY CXX_STANDARD_REQUIRED ON)
+
+        target_compile_options(jfc_catch_main PRIVATE $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-O0>)
+
+        if (ANDROID)
+            target_link_libraries(jfc_catch_main PUBLIC log)
+        endif()
+    endif()
+
+    add_executable(${JFC_TEST_TARGET}
+    	${TEST_SOURCE_FILES})
+
+    target_link_libraries(${JFC_TEST_TARGET} PRIVATE jfc_catch_main)
+
+    target_compile_options(${JFC_TEST_TARGET} PRIVATE $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-O0>)
 
     list(LENGTH DEPENDENCIES _dependency_count)
 
     if (_dependency_count GREATER 0)
-        add_dependencies(${PROJECT_NAME} "${DEPENDENCIES}")
+        add_dependencies(${JFC_TEST_TARGET} ${DEPENDENCIES})
     endif()
 
-    list(APPEND INCLUDE_DIRECTORIES "${${PROJECT_NAME}_INCLUDE_DIRECTORIES}") #automatically include public header paths from jfc_projects
+    target_include_directories(${JFC_TEST_TARGET} PRIVATE "${JFC_CATCH_INCLUDE_DIRECTORY_ABSOLUTE_PATH};${INCLUDE_DIRECTORIES}")
 
-    target_include_directories(${PROJECT_NAME} PRIVATE "${JFC_CATCH_INCLUDE_DIRECTORY_ABSOLUTE_PATH};${INCLUDE_DIRECTORIES}")
+    target_link_libraries(${JFC_TEST_TARGET} PRIVATE ${LIBRARIES})
 
-    target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
+    set_property(TARGET ${JFC_TEST_TARGET} PROPERTY CXX_STANDARD ${C++_STANDARD})
+    set_property(TARGET ${JFC_TEST_TARGET} PROPERTY CXX_STANDARD_REQUIRED ON)
 
-    foreach(_jfc_library ${LIBRARIES})
-        if (NOT TARGET "${_jfc_library}")
-            get_filename_component(_jfc_library_name "${_jfc_library}" NAME_WE)
+    if (C_STANDARD)
+        set_property(TARGET ${JFC_TEST_TARGET} PROPERTY C_STANDARD          ${C_STANDARD})
+        set_property(TARGET ${JFC_TEST_TARGET} PROPERTY C_STANDARD_REQUIRED ON)
+    endif()
 
-            string(REGEX REPLACE "^lib" "" _jfc_library_name "${_jfc_library_name}")
-
-            if (TARGET "${_jfc_library_name}")
-                add_dependencies(${PROJECT_NAME} "${_jfc_library_name}")
-            endif()
-        endif()
-    endforeach()
-
-    set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD   ${C_STANDARD})
-    set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD ${C++_STANDARD})
-
-    add_test(${PROJECT_NAME} ${PROJECT_NAME})
+    add_test(NAME ${JFC_TEST_TARGET} COMMAND ${JFC_TEST_TARGET})
 endmacro()
 

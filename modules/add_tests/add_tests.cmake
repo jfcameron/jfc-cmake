@@ -44,7 +44,7 @@ macro(jfc_add_tests)
     list(LENGTH DEPENDENCIES _dependency_count)
 
     if (_dependency_count GREATER 0)
-        add_dependencies(${PROJECT_NAME} "${DEPENDENCIES}")
+        add_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
     endif()
 
     list(APPEND INCLUDE_DIRECTORIES "${${PROJECT_NAME}_INCLUDE_DIRECTORIES}") #automatically include public header paths from jfc_projects

@@ -1,4 +1,4 @@
-# © 2018 Joseph Cameron - All Rights Reserved
+# © Joseph Cameron - All Rights Reserved
 
 cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
@@ -7,6 +7,7 @@ include_guard(DIRECTORY)
 include("${CMAKE_CURRENT_LIST_DIR}/modules/debug/debug.cmake")
 
 include("${CMAKE_CURRENT_LIST_DIR}/modules/add_dependencies/add_dependencies.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/modules/add_fuzz_tests/add_fuzz_tests.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/add_tests/add_tests.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/compiler_options/compiler_options.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/directories/directories.cmake")
@@ -18,6 +19,20 @@ include("${CMAKE_CURRENT_LIST_DIR}/modules/parse_arguments/parse_arguments.cmake
 include("${CMAKE_CURRENT_LIST_DIR}/modules/project/project.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/require_program/require_program.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/vulkan_compile_GLSL_to_SPIR-V/vulkan_compile_GLSL_to_SPIR-V.cmake")
+
+#================================================================================================
+# Fuzzing
+#================================================================================================
+option(JFC_BUILD_FUZZERS "Build coverage guided fuzz harnesses. Needs clang." OFF)
+
+if (JFC_BUILD_FUZZERS)
+    set(JFC_FUZZER_FLAGS -fsanitize=fuzzer,address,undefined -fno-omit-frame-pointer -g)
+
+    add_compile_options(-fsanitize=fuzzer-no-link,address,undefined -fno-omit-frame-pointer -g)
+    add_link_options(-fsanitize=address,undefined)
+
+    message(STATUS "jfc: fuzzers on, with address and undefined behaviour sanitizers")
+endif()
 
 #================================================================================================
 # Utilities
@@ -43,42 +58,6 @@ function(jfc_list_to_string)
 
     set(${OUTPUT} ${_output} PARENT_SCOPE)
 endfunction()
-
-#[[
-# TODO : This function has a logic error
-# Convert a string to a list.
-# @INPUT the string
-# @OUTPUT the name of the output list
-# @DELIMITER char|char sequence that separates each item in the string (e.g: , or ; etc)
-function(jfc_string_to_list)
-    jfc_parse_arguments(${ARGV}
-        REQUIRED_LISTS
-            INPUT
-        REQUIRED_SINGLE_VALUES
-            OUTPUT
-            DELIMITER
-    )
-
-    set(_output)
-
-    while(TRUE)
-        string(FIND "${INPUT}" "${DELIMITER}" _i)
-
-        if(${_i} LESS 0)
-            break()
-        endif()
-
-        string(SUBSTRING "${INPUT}" 0 ${_i} _item)
-
-        math(EXPR _i "${_i}+1")
-
-        string(SUBSTRING "${INPUT}" ${_i} -1 INPUT)
-
-        list(APPEND _output ${_item})
-    endwhile()
-
-    set(${OUTPUT} ${_output} PARENT_SCOPE)
-endfunction()]]
 
 #================================================================================================
 # Formatting: uncrustify
@@ -111,66 +90,3 @@ function(jfc_format_code_uncrustify aDirectory)
     endif()
 endfunction()
 
-#================================================================================================
-# Formatting: Clang
-#================================================================================================
-# TODO: where should the clang settings come from? fallback + override?
-function(jfc_format_code_clang) 
-    set(TAG "format")
-
-    jfc_require_program("uncrustify")
-
-    jfc_log(STATUS ${TAG} "this is not completed at all")
-endfunction()
-
-#================================================================================================
-# Resource loader
-#================================================================================================
-#
-function(jfc_resource)
-    jfc_log(FATAL_ERROR "blarblar" "resource must be implemented")
-
-    #
-    function(jfc_export_resource aResourceDirectory)
-        set(TAG "Resource exporter")
-
-        #[[if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${aResourceDirectory}" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${aResourceDirectory}")
-            jfc_log(STATUS ${TAG} "Exporting ${aResourceDirectory}")
-
-            file(COPY "${aResourceDirectory}" 
-                DESTINATION ${CMAKE_SOURCE_DIR}/build/)
-        else()
-            jfc_log(FATAL_ERROR ${TAG} "\"${aResourceDirectory}\" does not exist or is not a directory.")
-        endif()]]
-
-        jfc_log(FATAL_ERROR ${TAG} "This is not implemented.")
-    endfunction()
-
-    #
-    function(jfc_compile_resources)
-        jfc_parse_arguments(${ARGV}
-            REQUIRED_LISTS
-                FILES
-        )
-
-        set(TAG "resource compile")
-
-        function(_compile_resource aFile)
-            file(READ "${aFile}" bytes HEX)
-    
-            string(REGEX REPLACE "(..)" "0x\\1, " bytes "${bytes}")
-
-            string(FIND "${bytes}" ", " _i REVERSE)
-
-            string(SUBSTRING "${bytes}" 0 ${_i} bytes)
-    
-            message("${bytes}")
-        endfunction()
-
-        foreach(_file ${FILES})
-            _compile_resource("${_file}")
-        endforeach()
-
-        jfc_log(FATAL_ERROR ${TAG} "This is not implemented.")
-    endfunction()
-endfunction()

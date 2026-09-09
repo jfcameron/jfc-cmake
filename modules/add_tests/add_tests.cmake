@@ -29,7 +29,6 @@ macro(jfc_add_tests)
     )
 
     set(_jfc_test_owner "${PROJECT_NAME}")
-    set(_jfc_test_owner_includes "${${PROJECT_NAME}_INCLUDE_DIRECTORIES}")
 
     project("${_jfc_test_owner}_test_${JFC_TEST_NAME_COUNTER}")
 
@@ -45,23 +44,9 @@ macro(jfc_add_tests)
         add_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
     endif()
 
-    list(APPEND INCLUDE_DIRECTORIES "${_jfc_test_owner_includes}") 
-
     target_include_directories(${PROJECT_NAME} PRIVATE "${JFC_CATCH_INCLUDE_DIRECTORY_ABSOLUTE_PATH};${INCLUDE_DIRECTORIES}")
 
-    target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
-
-    foreach(_jfc_library ${LIBRARIES})
-        if (NOT TARGET "${_jfc_library}")
-            get_filename_component(_jfc_library_name "${_jfc_library}" NAME_WE)
-
-            string(REGEX REPLACE "^lib" "" _jfc_library_name "${_jfc_library_name}")
-
-            if (TARGET "${_jfc_library_name}")
-                add_dependencies(${PROJECT_NAME} "${_jfc_library_name}")
-            endif()
-        endif()
-    endforeach()
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBRARIES})
 
     set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD   ${C_STANDARD})
     set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD ${C++_STANDARD})

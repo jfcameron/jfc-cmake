@@ -9,11 +9,7 @@ set(JFC_DOXY_CONFIG_TEMPLATE_ABSOLUTE_PATH ${CMAKE_CURRENT_LIST_DIR}/doxy.config
 function(jfc_generate_documentation_doxygen)
     set(TAG "documentation")
 
-    jfc_require_program("doxygen")
-
-    if (NOT DOXYGEN_FOUND)
-        jfc_log(FATAL_ERROR ${TAG} "required program \"doxygen\" could not be found!")
-    endif()
+    find_program(DOXYGEN_EXECUTABLE doxygen REQUIRED)
 
     jfc_parse_arguments(${ARGV}
         REQUIRED_SINGLE_VALUES

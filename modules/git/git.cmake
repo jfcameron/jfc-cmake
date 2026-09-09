@@ -7,11 +7,7 @@ include_guard(DIRECTORY)
 function(jfc_git)
     set(TAG "git")
 
-    jfc_require_program("git")
-
-    if (NOT GIT_FOUND)
-        jfc_log(FATAL_ERROR ${TAG} "required program \"git\" could not be found!")
-    endif()
+    find_program(GIT_EXECUTABLE git REQUIRED)
 
     jfc_parse_arguments(${ARGV}
         REQUIRED_LISTS

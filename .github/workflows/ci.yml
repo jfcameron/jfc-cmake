@@ -22,12 +22,9 @@ jobs:
       - name: parse_arguments
         run: cmake -Wno-deprecated -P test/parse_arguments_test.cmake
 
-
-
-      - name: require_program
-        run: cmake -Wno-deprecated -P test/require_program_test.cmake
-
       - name: integration (jfc_add_tests)
         run: |
           cmake -S test/integration -B "${{ runner.temp }}/jfc-integration" -Wno-deprecated
           cmake --build "${{ runner.temp }}/jfc-integration"
+          ctest --test-dir "${{ runner.temp }}/jfc-integration" --output-on-failure
+

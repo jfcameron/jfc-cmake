@@ -12,4 +12,3 @@ include("${CMAKE_CURRENT_LIST_DIR}/modules/generate_buildinfo/generate_buildinfo
 include("${CMAKE_CURRENT_LIST_DIR}/modules/generate_documentation_doxygen/generate_documentation_doxygen.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/git/git.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/modules/parse_arguments/parse_arguments.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/modules/require_program/require_program.cmake")

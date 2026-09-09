@@ -124,11 +124,17 @@ else()
 endif()
 expect("the random field is long enough to be 128 bits (${_random_length} chars)" ${_ok})
 
+add_subdirectory(hyphen)
+
+expect("a hyphenated project name yields compilable identifiers" ${JFC_HYPHEN_PROBE_OK})
+
+
+
 message(STATUS "jfc_generate_documentation_doxygen")
 
-jfc_require_program("doxygen")
+find_program(DOXYGEN_EXECUTABLE doxygen)
 
-if (NOT DOXYGEN_FOUND)
+if (NOT DOXYGEN_EXECUTABLE)
     message(STATUS "  skip doxygen is not installed")
 else()
     jfc_generate_documentation_doxygen(

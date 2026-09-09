@@ -7,6 +7,8 @@ include_guard(DIRECTORY)
 set(JFC_BUILDINFO_TEMPLATE_ABSOLUTE_PATH ${CMAKE_CURRENT_LIST_DIR}/buildinfo.h.in)
 
 function(jfc_generate_cmake_header)
+    string(MAKE_C_IDENTIFIER "${PROJECT_NAME}" JFC_BUILDINFO_SYMBOL_PREFIX)
+
     string(RANDOM LENGTH 22 JFC_RANDOM_128BITS)
 
     execute_process(COMMAND git rev-parse HEAD 

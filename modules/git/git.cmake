@@ -1,22 +1,17 @@
 # © 2018 Joseph Cameron - All Rights Reserved
 
-cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.21)
 
 include_guard(DIRECTORY)
 
-# Call git commands, throwing if there is an error
-# @COMMAND the command to run e.g: status
-# @OUTPUT the symbol this function will assign the standard out result of the git command to
-# example usage:
-# jfc_git(COMMAND rev-parse HEAD
-#   OUTPUT theCurrentCommitHash)
-#
-# message(STATUS "${theCurrentCommitHash}") # the current commit's hash
-#
 function(jfc_git)
     set(TAG "git")
 
     jfc_require_program("git")
+
+    if (NOT GIT_FOUND)
+        jfc_log(FATAL_ERROR ${TAG} "required program \"git\" could not be found!")
+    endif()
 
     jfc_parse_arguments(${ARGV}
         REQUIRED_LISTS
@@ -30,7 +25,7 @@ function(jfc_git)
         set(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     endif()
 
-    execute_process(COMMAND git ${COMMAND}
+    execute_process(COMMAND "${GIT_EXECUTABLE}" ${COMMAND}
         WORKING_DIRECTORY ${WORKING_DIRECTORY}
         RESULT_VARIABLE _return_value
         OUTPUT_VARIABLE _output_value

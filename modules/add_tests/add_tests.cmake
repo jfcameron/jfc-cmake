@@ -1,6 +1,6 @@
 # © Joseph Cameron - All Rights Reserved
 
-cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.21)
 
 include_guard(DIRECTORY)
 
@@ -9,15 +9,10 @@ set(JFC_CATCH_INCLUDE_DIRECTORY_ABSOLUTE_PATH ${CMAKE_CURRENT_LIST_DIR}/include)
 
 set(JFC_TEST_NAME_COUNTER 0)
 
-enable_testing()
+if (NOT CMAKE_SCRIPT_MODE_FILE)
+    enable_testing()
+endif()
 
-# \brief adds a list of unit tests to the current project
-#
-# \detailed uses catch2 cpp unit testing system.
-#
-# @TEST_SOURCE_FILES list of cpp files containing tests
-# @C++_STANDARD required iso langauge standard for C++ 
-# @C_STANDARD required iso language standard for C
 macro(jfc_add_tests)
     set(TAG "TEST")
     
@@ -33,7 +28,10 @@ macro(jfc_add_tests)
             TEST_SOURCE_FILES
     )
 
-    project("${PROJECT_NAME}_test_${JFC_TEST_NAME_COUNTER}")
+    set(_jfc_test_owner "${PROJECT_NAME}")
+    set(_jfc_test_owner_includes "${${PROJECT_NAME}_INCLUDE_DIRECTORIES}")
+
+    project("${_jfc_test_owner}_test_${JFC_TEST_NAME_COUNTER}")
 
     math(EXPR JFC_TEST_NAME_COUNTER "${JFC_TEST_NAME_COUNTER}+1")
 
@@ -47,7 +45,7 @@ macro(jfc_add_tests)
         add_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
     endif()
 
-    list(APPEND INCLUDE_DIRECTORIES "${${PROJECT_NAME}_INCLUDE_DIRECTORIES}") #automatically include public header paths from jfc_projects
+    list(APPEND INCLUDE_DIRECTORIES "${_jfc_test_owner_includes}") 
 
     target_include_directories(${PROJECT_NAME} PRIVATE "${JFC_CATCH_INCLUDE_DIRECTORY_ABSOLUTE_PATH};${INCLUDE_DIRECTORIES}")
 

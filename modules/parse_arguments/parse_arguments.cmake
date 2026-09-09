@@ -1,6 +1,6 @@
 # © 2018 Joseph Cameron - All Rights Reserved
 
-cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.21)
 
 include_guard(DIRECTORY)
 
@@ -58,8 +58,8 @@ function(jfc_parse_arguments)
 
     cmake_parse_arguments("_ARG" "${NULL}" "${NULL}" "${_MULTI_VALUE_ARGS}" ${ARGN})
 
-    set(all_required_args ${_ARG_REQUIRED_SINGLE_VALUES}${_ARG_REQUIRED_LISTS})
-    set(all_optional_args ${_ARG_OPTIONS}${_ARG_SINGLE_VALUES}${_ARG_LISTS})
+    set(all_required_args ${_ARG_REQUIRED_SINGLE_VALUES} ${_ARG_REQUIRED_LISTS})
+    set(all_optional_args ${_ARG_OPTIONS} ${_ARG_SINGLE_VALUES} ${_ARG_LISTS})
 
     set(_required_only_argv_passthrough)
     set(_optional_only_argv_passthrough)
@@ -94,6 +94,8 @@ function(jfc_parse_arguments)
     macro(_promote_args_to_parent_scope argType bNoPrefix)
         if (NOT ${bNoPrefix})
             set(_prefix "_ARG_")
+        else()
+            set(_prefix "")
         endif()
 
         foreach(name ${${argType}})
@@ -119,15 +121,7 @@ function(jfc_parse_arguments)
             foreach(name ${${argType}})
                 list(LENGTH _ARG_${name} _s)
 
-                if (_s GREATER 0)
-                    set(_i "0")
-
-                    while(${_i} LESS ${_s})
-                        list(GET "_ARG_${name}" ${_i} value)
-
-                        MATH(EXPR _i "${_i}+1")
-                    endwhile()
-                else()
+                if (NOT _s GREATER 0)
                     jfc_log(FATAL_ERROR ${TAG} "Required arg \"${name}\" is missing or contains no values!")
                 endif()
             endforeach()
@@ -135,8 +129,8 @@ function(jfc_parse_arguments)
             _promote_args_to_parent_scope("${argType}" FALSE)
         endmacro()
 
-        _validate_and_promote_args_to_parent_scope(_ONE_VALUE_ARGS FALSE)
-        _validate_and_promote_args_to_parent_scope(_MULTI_VALUE_ARGS FALSE)
+        _validate_and_promote_args_to_parent_scope(_ONE_VALUE_ARGS)
+        _validate_and_promote_args_to_parent_scope(_MULTI_VALUE_ARGS)
     endfunction()
     _required_args_imp(${_required_only_argv_passthrough})
 

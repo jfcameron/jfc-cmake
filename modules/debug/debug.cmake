@@ -1,13 +1,9 @@
 # © 2018 Joseph Cameron - All Rights Reserved
 
-cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.21)
 
 include_guard(DIRECTORY)
 
-# print a message with colorized text of form: [TAGNAME] MESSAGEBODY
-#    @param aLogLevel: standard cmake log levels e.g: STATUS, FATAL_ERROR
-#    @param aTag: Hint about where in the project the log is coming from
-#    @param aMessage: content of message 
 function(jfc_log aLogLevel aTag aMessage)
     if (NOT WIN32)
         string(ASCII 27 JFC_ESC) # "\"
@@ -29,20 +25,4 @@ function(jfc_log aLogLevel aTag aMessage)
     string(CONCAT message_buffer "${message_buffer}" "${aMessage}")
 
     message("${aLogLevel}" "${message_buffer}")
-endfunction()
-
-# log all variables visible in the current scope
-# useful for identifying and state related bugs
-function(jfc_print_all_variables)
-    get_cmake_property(cmakevars VARIABLES)
-    
-    list(SORT cmakevars)
-    set(output "")
-    
-    foreach (cmakevar ${cmakevars})
-        string(CONCAT output "${output}" "${cmakevar}=${${cmakevar}}\n")
-    endforeach()
-
-    jfc_log(STATUS "Dump" "Called from ${CMAKE_CURRENT_LIST_FILE}...\n${output}")
-    jfc_log(STATUS "Dump" "end.")
 endfunction()

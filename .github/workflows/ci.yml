@@ -1,0 +1,33 @@
+# © Joseph Cameron - All Rights Reserved
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: modules (${{ matrix.runner }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: parse_arguments
+        run: cmake -Wno-deprecated -P test/parse_arguments_test.cmake
+
+
+
+      - name: require_program
+        run: cmake -Wno-deprecated -P test/require_program_test.cmake
+
+      - name: integration (jfc_add_tests)
+        run: |
+          cmake -S test/integration -B "${{ runner.temp }}/jfc-integration" -Wno-deprecated
+          cmake --build "${{ runner.temp }}/jfc-integration"

@@ -14,43 +14,45 @@ if (NOT CMAKE_SCRIPT_MODE_FILE)
 endif()
 
 macro(jfc_add_tests)
-    set(TAG "TEST")
-    
     jfc_parse_arguments(${ARGV}
         REQUIRED_SINGLE_VALUES
             C++_STANDARD
-            C_STANDARD
         LISTS
             INCLUDE_DIRECTORIES
             LIBRARIES
             DEPENDENCIES
+        SINGLE_VALUES
+            C_STANDARD
         REQUIRED_LISTS
             TEST_SOURCE_FILES
     )
 
-    set(_jfc_test_owner "${PROJECT_NAME}")
-
-    project("${_jfc_test_owner}_test_${JFC_TEST_NAME_COUNTER}")
+    set(JFC_TEST_TARGET "${PROJECT_NAME}_test_${JFC_TEST_NAME_COUNTER}")
 
     math(EXPR JFC_TEST_NAME_COUNTER "${JFC_TEST_NAME_COUNTER}+1")
 
-    add_executable(${PROJECT_NAME}
+    add_executable(${JFC_TEST_TARGET}
     	${TEST_SOURCE_FILES}
         ${JFC_CATCH_CONFIG_ABSOLUTE_PATH})
 
     list(LENGTH DEPENDENCIES _dependency_count)
 
     if (_dependency_count GREATER 0)
-        add_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
+        add_dependencies(${JFC_TEST_TARGET} ${DEPENDENCIES})
     endif()
 
-    target_include_directories(${PROJECT_NAME} PRIVATE "${JFC_CATCH_INCLUDE_DIRECTORY_ABSOLUTE_PATH};${INCLUDE_DIRECTORIES}")
+    target_include_directories(${JFC_TEST_TARGET} PRIVATE "${JFC_CATCH_INCLUDE_DIRECTORY_ABSOLUTE_PATH};${INCLUDE_DIRECTORIES}")
 
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBRARIES})
+    target_link_libraries(${JFC_TEST_TARGET} PRIVATE ${LIBRARIES})
 
-    set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD   ${C_STANDARD})
-    set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD ${C++_STANDARD})
+    set_property(TARGET ${JFC_TEST_TARGET} PROPERTY CXX_STANDARD ${C++_STANDARD})
+    set_property(TARGET ${JFC_TEST_TARGET} PROPERTY CXX_STANDARD_REQUIRED ON)
 
-    add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})
+    if (C_STANDARD)
+        set_property(TARGET ${JFC_TEST_TARGET} PROPERTY C_STANDARD          ${C_STANDARD})
+        set_property(TARGET ${JFC_TEST_TARGET} PROPERTY C_STANDARD_REQUIRED ON)
+    endif()
+
+    add_test(NAME ${JFC_TEST_TARGET} COMMAND ${JFC_TEST_TARGET})
 endmacro()
 

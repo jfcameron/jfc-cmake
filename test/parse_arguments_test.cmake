@@ -6,7 +6,6 @@
 #
 cmake_minimum_required(VERSION 3.21)
 
-include("${CMAKE_CURRENT_LIST_DIR}/../modules/debug/debug.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../modules/parse_arguments/parse_arguments.cmake")
 
 set(_jfc_test_failures 0)
@@ -18,6 +17,32 @@ function(jfc_expect_equal aDescription aActual aExpected)
 
     if (NOT "${aActual}" STREQUAL "${aExpected}")
         message(SEND_ERROR "  FAIL ${aDescription}\n       expected [${aExpected}]\n       actual   [${aActual}]")
+
+        math(EXPR _jfc_test_failures "${_jfc_test_failures}+1")
+        set(_jfc_test_failures "${_jfc_test_failures}" PARENT_SCOPE)
+    else()
+        message(STATUS "  ok   ${aDescription}")
+    endif()
+endfunction()
+
+function(jfc_expect_fatal aDescription aFixture aExpectedText)
+    math(EXPR _jfc_test_count "${_jfc_test_count}+1")
+    set(_jfc_test_count "${_jfc_test_count}" PARENT_SCOPE)
+
+    execute_process(
+        COMMAND "${CMAKE_COMMAND}" -Wno-deprecated -P
+                "${CMAKE_CURRENT_LIST_DIR}/fixtures/${aFixture}"
+        RESULT_VARIABLE _result
+        OUTPUT_VARIABLE _output
+        ERROR_VARIABLE _output)
+
+    if (_result EQUAL 0)
+        message(SEND_ERROR "  FAIL ${aDescription} -- it was accepted")
+
+        math(EXPR _jfc_test_failures "${_jfc_test_failures}+1")
+        set(_jfc_test_failures "${_jfc_test_failures}" PARENT_SCOPE)
+    elseif (NOT "${_output}" MATCHES "${aExpectedText}")
+        message(SEND_ERROR "  FAIL ${aDescription} -- error did not mention [${aExpectedText}]\n       got: ${_output}")
 
         math(EXPR _jfc_test_failures "${_jfc_test_failures}+1")
         set(_jfc_test_failures "${_jfc_test_failures}" PARENT_SCOPE)
@@ -93,6 +118,50 @@ else()
 endif()
 
 math(EXPR _jfc_test_count "${_jfc_test_count}+1")
+
+jfc_expect_fatal("a misspelled keyword is fatal, not silently dropped"
+    "unknown_keyword.cmake" "unrecognised argument")
+
+jfc_expect_fatal("a keyword with no value after it is fatal"
+    "valueless_keyword.cmake" "no value")
+
+function(_omits_optional)
+    jfc_parse_arguments(${ARGV}
+        SINGLE_VALUES
+            OPTIONAL_THING
+        REQUIRED_SINGLE_VALUES
+            FIRST_REQUIRED
+    )
+
+    set(OUT_OPTIONAL "${OPTIONAL_THING}" PARENT_SCOPE)
+endfunction()
+
+set(OPTIONAL_THING "leaked-from-caller-scope")
+_omits_optional(FIRST_REQUIRED a)
+jfc_expect_equal("an omitted optional does not inherit the caller's variable" "${OUT_OPTIONAL}" "")
+unset(OPTIONAL_THING)
+
+function(_all_optional)
+    jfc_parse_arguments(${ARGV}
+        SINGLE_VALUES
+            NAME
+        LISTS
+            FILES
+    )
+
+    set(OUT_NAME "${NAME}" PARENT_SCOPE)
+endfunction()
+
+_all_optional()
+jfc_expect_equal("an all-optional signature accepts zero arguments" "${OUT_NAME}" "")
+
+set(_leaked)
+foreach (_helper _promote_args_to_parent_scope _required_args_imp _optional_args_imp)
+    if (COMMAND ${_helper})
+        list(APPEND _leaked "${_helper}")
+    endif()
+endforeach()
+jfc_expect_equal("it defines no helpers in global scope" "${_leaked}" "")
 
 message(STATUS "")
 

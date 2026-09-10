@@ -4,157 +4,63 @@ cmake_minimum_required(VERSION 3.21)
 
 include_guard(DIRECTORY)
 
-# @OPTIONS : booleans
-# @SINGLE_VALUES : single values that may be unset
-# @REQUIRED_SINGLE_VALUES : single values that must be set
-# @LISTS : lists that may be unset
-# @REQUIRED_LISTS : lists that must be set
-# Wrapper for cmake_parse_arguments that does the busy work of asserting the existence of required args.
-# FATAL_ERROR if a required is missing
-# the parsed arg list generates a series of variables with names matching your input e.g:
-# jfc_parse_arguments(${ARGV}
-#   OPTIONS
-#       blar
-#       blam
-#   SINGLE_VALUES
-#       zip
-#   REQUIRED_SINGLE_VALUES blar
-#   LISTS etcetc
-#   REQUIRED_LISTS etc
-# )
-# generates the following variables:
-# booleans: blar, blam (TRUE if present in ARGV, FALSE if not)
-# single value: zip (may be any value or unset if not present in argv)
-# single value: blar (any value, guaranteed to be set after successful call to parse_arguments)
-# list: etcetc (must use LIST family of functions to interact with content. unset if not present in ARGV)
-# list: etc (must use LIST family of functions to interact with content. guaranteed to be set after successful call to parse_arguments)
 function(jfc_parse_arguments)
-    set(TAG "jfc_parse_arguments")
+    set(_spec_keywords OPTIONS SINGLE_VALUES LISTS REQUIRED_SINGLE_VALUES REQUIRED_LISTS)
 
-    set(NULL)
-    set(_MULTI_VALUE_ARGS
-            OPTIONS    
-            SINGLE_VALUES          
-            LISTS 
-            REQUIRED_SINGLE_VALUES 
-            REQUIRED_LISTS
-    )
+    set(_argv)
+    set(_spec)
+    set(_reading_spec FALSE)
 
-    set(_argv_passthrough)
-    foreach(_arg ${ARGV})
-        list(FIND _MULTI_VALUE_ARGS ${_arg} _item_is_a_name)
+    foreach (_arg IN LISTS ARGV)
+        if (NOT _reading_spec)
+            list(FIND _spec_keywords "${_arg}" _index)
 
-        if (_item_is_a_name GREATER_EQUAL 0)
-            break()
+            if (_index GREATER_EQUAL 0)
+                set(_reading_spec TRUE)
+            endif()
         endif()
 
-        list(APPEND _argv_passthrough ${_arg})
+        if (_reading_spec)
+            list(APPEND _spec "${_arg}")
+        else()
+            list(APPEND _argv "${_arg}")
+        endif()
     endforeach()
 
-    list (LENGTH _argv_passthrough _s)
-    if (_s EQUAL 0)
-        jfc_log(FATAL_ERROR ${TAG} "nothing to parse! Did you forget to prepend $\{ARGV\} to your list of requirements?")
+    cmake_parse_arguments(_SPEC "" "" "${_spec_keywords}" ${_spec})
+
+    set(_options       ${_SPEC_OPTIONS})
+    set(_single_values ${_SPEC_SINGLE_VALUES} ${_SPEC_REQUIRED_SINGLE_VALUES})
+    set(_lists         ${_SPEC_LISTS} ${_SPEC_REQUIRED_LISTS})
+    set(_required      ${_SPEC_REQUIRED_SINGLE_VALUES} ${_SPEC_REQUIRED_LISTS})
+
+    list(LENGTH _argv _argv_length)
+
+    if (_argv_length EQUAL 0 AND _required)
+        message(FATAL_ERROR "jfc_parse_arguments: nothing to parse! Did you forget to prepend $\{ARGV\} to your list of requirements?")
     endif()
 
-    cmake_parse_arguments("_ARG" "${NULL}" "${NULL}" "${_MULTI_VALUE_ARGS}" ${ARGN})
+    cmake_parse_arguments(_ARG "${_options}" "${_single_values}" "${_lists}" ${_argv})
 
-    set(all_required_args ${_ARG_REQUIRED_SINGLE_VALUES} ${_ARG_REQUIRED_LISTS})
-    set(all_optional_args ${_ARG_OPTIONS} ${_ARG_SINGLE_VALUES} ${_ARG_LISTS})
+    if (_ARG_UNPARSED_ARGUMENTS)
+        list(JOIN _ARG_UNPARSED_ARGUMENTS " " _unrecognised)
 
-    set(_required_only_argv_passthrough)
-    set(_optional_only_argv_passthrough)
+        message(FATAL_ERROR "jfc_parse_arguments: unrecognised argument(s): ${_unrecognised}")
+    endif()
 
-    set(_mode "required") # required | optional
-    foreach(_arg ${_argv_passthrough})
-        set(type "value")
+    if (_ARG_KEYWORDS_MISSING_VALUES)
+        list(JOIN _ARG_KEYWORDS_MISSING_VALUES " " _valueless)
 
-        foreach(_required ${all_required_args})
-            if ("${_required}" STREQUAL "${_arg}")
-                set(type "required")
-                set(_mode "required")
-            endif()
-        endforeach()
+        message(FATAL_ERROR "jfc_parse_arguments: keyword(s) supplied with no value: ${_valueless}")
+    endif()
 
-        if ("${type}" STREQUAL "value")
-            foreach(_optional ${all_optional_args})
-                if ("${_optional}" STREQUAL "${_arg}")
-                    set(type "optional" )
-                    set(_mode "optional")
-                endif()
-            endforeach()
-        endif()
-
-        if ("${_mode}" STREQUAL "required")
-            list(APPEND _required_only_argv_passthrough "${_arg}")
-        elseif ("${_mode}" STREQUAL "optional")
-            list(APPEND _optional_only_argv_passthrough "${_arg}")
+    foreach (_name IN LISTS _required)
+        if (NOT DEFINED _ARG_${_name} OR "${_ARG_${_name}}" STREQUAL "")
+            message(FATAL_ERROR "jfc_parse_arguments: Required arg \"${_name}\" is missing or contains no values!")
         endif()
     endforeach()
 
-    macro(_promote_args_to_parent_scope argType bNoPrefix)
-        if (NOT ${bNoPrefix})
-            set(_prefix "_ARG_")
-        else()
-            set(_prefix "")
-        endif()
-
-        foreach(name ${${argType}})
-            list(LENGTH _ARG_${name} _s)
-
-            if (_s GREATER 0)
-                set(${_prefix}${name} "${_ARG_${name}}" PARENT_SCOPE)
-            endif()
-        endforeach()
-    endmacro()
-
-    function(_required_args_imp)
-        set(_OPTIONS_ARGS     "")
-        set(_ONE_VALUE_ARGS   "${_ARG_REQUIRED_SINGLE_VALUES}")
-        set(_MULTI_VALUE_ARGS "${_ARG_REQUIRED_LISTS}"        )
-
-        set(_ONE_VALUE_ARGS   "${_ARG_REQUIRED_SINGLE_VALUES}" PARENT_SCOPE)
-        set(_MULTI_VALUE_ARGS "${_ARG_REQUIRED_LISTS}"         PARENT_SCOPE)
-
-        cmake_parse_arguments("_ARG" "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
-
-        macro(_validate_and_promote_args_to_parent_scope argType)
-            foreach(name ${${argType}})
-                list(LENGTH _ARG_${name} _s)
-
-                if (NOT _s GREATER 0)
-                    jfc_log(FATAL_ERROR ${TAG} "Required arg \"${name}\" is missing or contains no values!")
-                endif()
-            endforeach()
-
-            _promote_args_to_parent_scope("${argType}" FALSE)
-        endmacro()
-
-        _validate_and_promote_args_to_parent_scope(_ONE_VALUE_ARGS)
-        _validate_and_promote_args_to_parent_scope(_MULTI_VALUE_ARGS)
-    endfunction()
-    _required_args_imp(${_required_only_argv_passthrough})
-
-    _promote_args_to_parent_scope(_ONE_VALUE_ARGS TRUE)
-    _promote_args_to_parent_scope(_MULTI_VALUE_ARGS TRUE)
-
-    function(_optional_args_imp)
-        set(_OPTIONS_ARGS     "${_ARG_OPTIONS}")
-        set(_ONE_VALUE_ARGS   "${_ARG_SINGLE_VALUES}")
-        set(_MULTI_VALUE_ARGS "${_ARG_LISTS}")
-
-        set(_OPTIONS_ARGS     "${_ARG_OPTIONS}"       PARENT_SCOPE)
-        set(_ONE_VALUE_ARGS   "${_ARG_SINGLE_VALUES}" PARENT_SCOPE)
-        set(_MULTI_VALUE_ARGS "${_ARG_LISTS}"         PARENT_SCOPE)
-
-        cmake_parse_arguments("_ARG" "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
-
-        _promote_args_to_parent_scope(_OPTIONS_ARGS FALSE)
-        _promote_args_to_parent_scope(_ONE_VALUE_ARGS FALSE)
-        _promote_args_to_parent_scope(_MULTI_VALUE_ARGS FALSE)
-    endfunction()
-    _optional_args_imp(${_optional_only_argv_passthrough})
-
-    _promote_args_to_parent_scope(_OPTIONS_ARGS TRUE)
-    _promote_args_to_parent_scope(_ONE_VALUE_ARGS TRUE)
-    _promote_args_to_parent_scope(_MULTI_VALUE_ARGS TRUE)
+    foreach (_name IN LISTS _options _single_values _lists)
+        set(${_name} "${_ARG_${_name}}" PARENT_SCOPE)
+    endforeach()
 endfunction()

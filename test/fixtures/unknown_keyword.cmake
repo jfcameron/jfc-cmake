@@ -2,12 +2,11 @@
 
 include("${CMAKE_CURRENT_LIST_DIR}/../../modules/parse_arguments/parse_arguments.cmake")
 
-function(needs_two)
+function(takes_files)
     jfc_parse_arguments(${ARGV}
-        REQUIRED_SINGLE_VALUES
-            FIRST
-            SECOND
+        LISTS
+            FILES
     )
 endfunction()
 
-needs_two(FIRST a)
+takes_files(FILE important.cpp)

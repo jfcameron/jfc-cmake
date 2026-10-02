@@ -112,6 +112,46 @@ else()
 endif()
 expect("C_STANDARD is left unset when it is not asked for" ${_ok})
 
+get_target_property(_test_sources ${JFC_TEST_TARGET} SOURCES)
+
+if (TARGET jfc_catch_main AND _test_links MATCHES "jfc_catch_main" AND NOT _test_sources MATCHES "catchconfig")
+    set(_ok TRUE)
+else()
+    set(_ok FALSE)
+endif()
+expect("catch2's main is a library the test target links, not a source compiled into it" ${_ok})
+
+get_target_property(_test_options ${JFC_TEST_TARGET} COMPILE_OPTIONS)
+
+if (_test_options MATCHES "-O0")
+    set(_ok TRUE)
+else()
+    set(_ok FALSE)
+endif()
+expect("test sources are compiled unoptimised" ${_ok})
+
+set(_first_test_target "${JFC_TEST_TARGET}")
+
+jfc_add_tests(
+    C++_STANDARD 17
+
+    TEST_SOURCE_FILES
+        "${CMAKE_CURRENT_LIST_DIR}/test/probe_test.cpp"
+
+    LIBRARIES
+        probe)
+
+get_target_property(_second_links ${JFC_TEST_TARGET} LINK_LIBRARIES)
+get_target_property(_main_sources jfc_catch_main SOURCES)
+list(LENGTH _main_sources _main_source_count)
+
+if (NOT JFC_TEST_TARGET STREQUAL _first_test_target AND _second_links MATCHES "jfc_catch_main" AND _main_source_count EQUAL 1)
+    set(_ok TRUE)
+else()
+    set(_ok FALSE)
+endif()
+expect("a second test target links the same main, compiled once" ${_ok})
+
 message(STATUS "jfc_generate_build_info")
 
 jfc_generate_build_info(INCLUDE_PATH gdk/probe)
@@ -181,8 +221,6 @@ expect("with no arguments the path is derived from the repository name (jfc-cmak
 add_subdirectory(hyphen)
 
 expect("a hyphenated path segment yields compilable identifiers" ${JFC_HYPHEN_PROBE_OK})
-
-
 
 message(STATUS "jfc_generate_documentation_doxygen")
 
@@ -312,3 +350,4 @@ if (_failures GREATER 0)
 endif()
 
 message(STATUS "integration assertions passed")
+

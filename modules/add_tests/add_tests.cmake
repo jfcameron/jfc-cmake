@@ -31,9 +31,23 @@ macro(jfc_add_tests)
 
     math(EXPR JFC_TEST_NAME_COUNTER "${JFC_TEST_NAME_COUNTER}+1")
 
+    if (NOT TARGET jfc_catch_main)
+        add_library(jfc_catch_main STATIC "${JFC_CATCH_CONFIG_ABSOLUTE_PATH}")
+
+        target_include_directories(jfc_catch_main PUBLIC "${JFC_CATCH_INCLUDE_DIRECTORY_ABSOLUTE_PATH}")
+
+        set_property(TARGET jfc_catch_main PROPERTY CXX_STANDARD 17)
+        set_property(TARGET jfc_catch_main PROPERTY CXX_STANDARD_REQUIRED ON)
+
+        target_compile_options(jfc_catch_main PRIVATE $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-O0>)
+    endif()
+
     add_executable(${JFC_TEST_TARGET}
-    	${TEST_SOURCE_FILES}
-        ${JFC_CATCH_CONFIG_ABSOLUTE_PATH})
+    	${TEST_SOURCE_FILES})
+
+    target_link_libraries(${JFC_TEST_TARGET} PRIVATE jfc_catch_main)
+
+    target_compile_options(${JFC_TEST_TARGET} PRIVATE $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-O0>)
 
     list(LENGTH DEPENDENCIES _dependency_count)
 

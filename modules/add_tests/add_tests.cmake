@@ -40,6 +40,10 @@ macro(jfc_add_tests)
         set_property(TARGET jfc_catch_main PROPERTY CXX_STANDARD_REQUIRED ON)
 
         target_compile_options(jfc_catch_main PRIVATE $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-O0>)
+
+        if (ANDROID)
+            target_link_libraries(jfc_catch_main PUBLIC log)
+        endif()
     endif()
 
     add_executable(${JFC_TEST_TARGET}

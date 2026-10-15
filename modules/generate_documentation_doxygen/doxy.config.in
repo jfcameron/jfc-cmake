@@ -17,10 +17,12 @@ USE_MDFILE_AS_MAINPAGE = @README_PATH@
 # Settings that differ from doxygen's defaults
 #---------------------------------------------------------------------------
 CASE_SENSE_NAMES       = NO                 # forces generated files to have lowercase names on all platforms
-GENERATE_LATEX         = NO                 # no latex documentation, just html
+GENERATE_LATEX         = NO                 # no latex documentation
 GENERATE_TREEVIEW      = NO                 # Dont generate a treeview
 RECURSIVE              = YES                # Headers can be in nested directories, not just flat include directories
 TOC_INCLUDE_HEADINGS   = 0                  # The README is the main page; its headings should not each become a navigation entry.
 WARN_AS_ERROR          = FAIL_ON_WARNINGS   # promote warnings to errors
 WARN_IF_UNDOCUMENTED   = NO                 # Undocumented declarations are not an error. 
+WARN_IF_INCOMPLETE_DOC = NO                 # A parameter left to its name and type, as an undocumented declaration is not
+WARN_IF_DOC_ERROR      = YES                # A \param naming a parameter that does not exist is an error
 

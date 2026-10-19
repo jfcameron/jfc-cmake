@@ -152,6 +152,120 @@ else()
 endif()
 expect("a second test target links the same main, compiled once" ${_ok})
 
+message(STATUS "jfc_check_headers")
+
+jfc_check_headers(probe)
+
+if (TARGET probe_header_check)
+    set(_ok TRUE)
+else()
+    set(_ok FALSE)
+endif()
+expect("a header check is made, named after its target" ${_ok})
+
+get_target_property(_check_sources probe_header_check SOURCES)
+list(LENGTH _check_sources _check_source_count)
+
+if (_check_source_count EQUAL 1)
+    set(_ok TRUE)
+else()
+    set(_ok FALSE)
+endif()
+expect("a source for each public header (${_check_source_count})" ${_ok})
+
+if (_check_source_count EQUAL 1)
+    file(READ "${_check_sources}" _check_text)
+else()
+    set(_check_text "")
+endif()
+
+if (_check_text STREQUAL "#include <probe/probe.h>\n")
+    set(_ok TRUE)
+else()
+    set(_ok FALSE)
+endif()
+expect("each includes its header by its public path, and nothing else" ${_ok})
+
+get_target_property(_check_links probe_header_check LINK_LIBRARIES)
+
+if (_check_links MATCHES "probe")
+    set(_ok TRUE)
+else()
+    set(_ok FALSE)
+endif()
+expect("it links the target, so it compiles as a consumer would" ${_ok})
+
+# built: a library whose own sources include <string> before a header that uses it without
+# including it. The library builds; its header check doesn't, until that header is excluded
+set(_leaning "${CMAKE_CURRENT_BINARY_DIR}/leaning_probe")
+
+file(WRITE "${_leaning}/include/leaning/fine.h" "#include <string>\ninline std::string fine() { return \"fine\"; }\n")
+file(WRITE "${_leaning}/include/leaning/leaning.h" "inline std::string leaning() { return \"leaning\"; }\n")
+file(WRITE "${_leaning}/src/leaning.cpp" "#include <string>\n#include <leaning/leaning.h>\n#include <leaning/fine.h>\n")
+file(WRITE "${_leaning}/CMakeLists.txt"
+    "cmake_minimum_required(VERSION 3.21)\n"
+    "project(leaning_probe CXX)\n"
+    "include(\"${CMAKE_CURRENT_LIST_DIR}/../../jfclib.cmake\")\n"
+    "add_library(leaning STATIC src/leaning.cpp)\n"
+    "target_include_directories(leaning PUBLIC \"$<BUILD_INTERFACE:\${CMAKE_CURRENT_SOURCE_DIR}/include>\")\n"
+    "if (EXCLUDING)\n"
+    "    jfc_check_headers(leaning EXCLUDE leaning/leaning.h)\n"
+    "else()\n"
+    "    jfc_check_headers(leaning)\n"
+    "endif()\n")
+
+foreach (_excluding OFF ON)
+    set(_out "${_leaning}/out_${_excluding}")
+
+    execute_process(
+        COMMAND "${CMAKE_COMMAND}" -S "${_leaning}" -B "${_out}" -DEXCLUDING=${_excluding} -Wno-deprecated
+        RESULT_VARIABLE _leaning_configured OUTPUT_QUIET ERROR_VARIABLE _leaning_error)
+
+    if (NOT _leaning_configured EQUAL 0)
+        message(STATUS "       ${_leaning_error}")
+    endif()
+
+    execute_process(COMMAND "${CMAKE_COMMAND}" --build "${_out}" --target leaning
+        RESULT_VARIABLE _library_built OUTPUT_QUIET ERROR_QUIET)
+
+    execute_process(COMMAND "${CMAKE_COMMAND}" --build "${_out}" --target leaning_header_check
+        RESULT_VARIABLE _check_built OUTPUT_VARIABLE _check_output ERROR_VARIABLE _check_output)
+
+    if (_excluding)
+        if (_leaning_configured EQUAL 0 AND _check_built EQUAL 0)
+            set(_ok TRUE)
+        else()
+            set(_ok FALSE)
+        endif()
+        expect("with the leaning header excluded, the check builds" ${_ok})
+    else()
+        if (_leaning_configured EQUAL 0 AND _library_built EQUAL 0)
+            set(_ok TRUE)
+        else()
+            set(_ok FALSE)
+        endif()
+        expect("a library whose header leans on its includer builds" ${_ok})
+
+        if (NOT _check_built EQUAL 0 AND _check_output MATCHES "leaning\\.h")
+            set(_ok TRUE)
+        else()
+            set(_ok FALSE)
+        endif()
+        expect("but its header check doesn't, and says which header" ${_ok})
+    endif()
+endforeach()
+
+execute_process(
+    COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_LIST_DIR}/../fixtures/check_headers_no_target.cmake"
+    RESULT_VARIABLE _no_target OUTPUT_QUIET ERROR_VARIABLE _no_target_error)
+
+if (NOT _no_target EQUAL 0 AND _no_target_error MATCHES "there is no target nothing")
+    set(_ok TRUE)
+else()
+    set(_ok FALSE)
+endif()
+expect("a target that isn't there is refused, by name" ${_ok})
+
 message(STATUS "jfc_generate_build_info")
 
 jfc_generate_build_info(INCLUDE_PATH gdk/probe)

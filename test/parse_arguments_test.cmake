@@ -1,4 +1,4 @@
-# © Joseph Cameron - All Rights Reserved
+# © Joseph Cameron - MIT License
 #
 # Tests for jfc_parse_arguments. Run it directly, from anywhere:
 #

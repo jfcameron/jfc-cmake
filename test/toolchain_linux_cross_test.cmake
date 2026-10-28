@@ -1,4 +1,4 @@
-# © Joseph Cameron - All Rights Reserved
+# © Joseph Cameron - MIT License
 #
 # Tests for toolchains/toolchain-linux-cross.cmake
 #

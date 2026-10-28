@@ -1,4 +1,4 @@
-# © Joseph Cameron - All Rights Reserved
+# © Joseph Cameron - MIT License
 
 if (DEFINED ENV{MSVC_WINE_ROOT})
     set(_msvc_wine_root "$ENV{MSVC_WINE_ROOT}")

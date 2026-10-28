@@ -1,4 +1,4 @@
-# © Joseph Cameron - All Rights Reserved
+# © Joseph Cameron - MIT License
 
 if (NOT JFC_CROSS_TRIPLE)
     message(FATAL_ERROR "toolchain-linux-cross.cmake: set JFC_CROSS_TRIPLE, e.g. arm-linux-gnueabihf")

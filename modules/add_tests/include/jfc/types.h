@@ -1,4 +1,4 @@
-// © 2019 Joseph Cameron - All Rights Reserved
+// © Joseph Cameron - MIT License
 
 #ifndef JFC_ADD_TEST_TYPES 
 #define JFC_ADD_TEST_TYPES

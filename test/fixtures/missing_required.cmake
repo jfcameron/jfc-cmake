@@ -1,4 +1,4 @@
-# © Joseph Cameron - All Rights Reserved
+# © Joseph Cameron - MIT License
 
 include("${CMAKE_CURRENT_LIST_DIR}/../../modules/parse_arguments/parse_arguments.cmake")
 

@@ -1,4 +1,4 @@
-# © Joseph Cameron - All Rights Reserved
+# © Joseph Cameron - MIT License
 #
 # Configure-time integration test for jfc_add_tests.
 #

@@ -15,11 +15,12 @@ function(jfc_embed_file aSymbol aPathToInputFile aPathToOutputFile)
     string(REGEX REPLACE "[^A-Z0-9_]" "_" _guard "${_guard}")
     set(_guard "${_guard}_H")
 
-    file(WRITE "${aPathToOutputFile}"
+    file(CONFIGURE OUTPUT "${aPathToOutputFile}" CONTENT
         "// GENERATED at configure time, do not edit directly.
         #ifndef ${_guard}
         #define ${_guard}
         static const unsigned char ${aSymbol}[] = {${_bytes}};
         #endif"
+        @ONLY
     )
 endfunction()

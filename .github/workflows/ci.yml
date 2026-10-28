@@ -28,3 +28,26 @@ jobs:
           cmake --build "${{ runner.temp }}/jfc-integration"
           ctest --test-dir "${{ runner.temp }}/jfc-integration" --output-on-failure
 
+      - name: toolchain-linux-cross
+        run: cmake -Wno-deprecated -P test/toolchain_linux_cross_test.cmake
+
+  cross:
+    name: integration on ${{ matrix.triple }} (qemu)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        triple: [arm-linux-gnueabihf, s390x-linux-gnu]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install
+        run: sudo apt-get update && sudo apt-get install -y g++-${{ matrix.triple }} qemu-user
+
+      - name: integration (jfc_add_tests), cross compiled
+        run: |
+          cmake -S test/integration -B "${{ runner.temp }}/jfc-integration" -Wno-deprecated \
+              --toolchain "$PWD/toolchains/toolchain-linux-cross.cmake" -DJFC_CROSS_TRIPLE=${{ matrix.triple }}
+          cmake --build "${{ runner.temp }}/jfc-integration"
+          ctest --test-dir "${{ runner.temp }}/jfc-integration" --output-on-failure

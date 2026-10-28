@@ -25,8 +25,8 @@ jobs:
       - name: integration (jfc_add_tests)
         run: |
           cmake -S test/integration -B "${{ runner.temp }}/jfc-integration" -Wno-deprecated
-          cmake --build "${{ runner.temp }}/jfc-integration"
-          ctest --test-dir "${{ runner.temp }}/jfc-integration" --output-on-failure
+          cmake --build "${{ runner.temp }}/jfc-integration" --config Debug
+          ctest --test-dir "${{ runner.temp }}/jfc-integration" -C Debug --output-on-failure
 
       - name: toolchain-linux-cross
         run: cmake -Wno-deprecated -P test/toolchain_linux_cross_test.cmake
@@ -49,5 +49,5 @@ jobs:
         run: |
           cmake -S test/integration -B "${{ runner.temp }}/jfc-integration" -Wno-deprecated \
               --toolchain "$PWD/toolchains/toolchain-linux-cross.cmake" -DJFC_CROSS_TRIPLE=${{ matrix.triple }}
-          cmake --build "${{ runner.temp }}/jfc-integration"
-          ctest --test-dir "${{ runner.temp }}/jfc-integration" --output-on-failure
+          cmake --build "${{ runner.temp }}/jfc-integration" --config Debug
+          ctest --test-dir "${{ runner.temp }}/jfc-integration" -C Debug --output-on-failure

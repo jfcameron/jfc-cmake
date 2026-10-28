@@ -1,5 +1,27 @@
 # © Joseph Cameron - MIT License
 
+#[=======================================================================[.rst:
+jfc_parse_arguments
+-------------------
+
+.. signature::
+  jfc_parse_arguments(<argument>... [OPTIONS <name>...] [SINGLE_VALUES <name>...] [LISTS <name>...]
+                      [REQUIRED_SINGLE_VALUES <name>...] [REQUIRED_LISTS <name>...])
+
+  Parses a function's or macro's own arguments against a specification, so that it fails loudly rather than
+  quietly ignoring a mistake. The arguments come first, everything up to the first specification keyword,
+  so a caller passes ``${ARGV}`` ahead of its specification:
+
+  .. code-block:: cmake
+
+    jfc_parse_arguments(${ARGV}
+        REQUIRED_SINGLE_VALUES NAME
+        LISTS SOURCES)
+
+  Each name in the specification is set, unprefixed, in the calling scope. It is a fatal error to pass an
+  argument the specification does not name, to give a keyword no value, or to leave out a required one.
+#]=======================================================================]
+
 cmake_minimum_required(VERSION 3.21)
 
 include_guard(DIRECTORY)

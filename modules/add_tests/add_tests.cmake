@@ -1,5 +1,32 @@
 # © Joseph Cameron - MIT License
 
+#[=======================================================================[.rst:
+jfc_add_tests
+-------------
+
+Including this module enables testing for the directory, unless CMake is running a script.
+
+.. signature::
+  jfc_add_tests(C++_STANDARD <standard> TEST_SOURCE_FILES <source>...
+                [C_STANDARD <standard>] [INCLUDE_DIRECTORIES <directory>...]
+                [LIBRARIES <library>...] [DEPENDENCIES <target>...])
+
+  Makes a Catch2 test executable of the sources and registers it with CTest.
+
+  - **Naming:** the target is named ``<PROJECT_NAME>_test_<n>``, where ``<n>`` counts the test targets made in
+    the directory scope. The name is published as :variable:`JFC_TEST_TARGET`.
+  - **Standards:** the C++ standard is required, not merely requested. The C standard is set only when given.
+  - **Catch2:** its main is a static library, ``jfc_catch_main``, compiled once and linked by every test target.
+    Its header is precompiled, and on clang the precompiled header carries no timestamp, so it is the same
+    each time.
+  - **Optimisation:** test sources compile at ``-O0`` on gcc and clang, where optimising test code costs more
+    build time than it saves.
+
+.. variable:: JFC_TEST_TARGET
+
+  The name of the target the last :command:`jfc_add_tests` made, for setting further properties on it.
+#]=======================================================================]
+
 cmake_minimum_required(VERSION 3.21)
 
 include_guard(DIRECTORY)

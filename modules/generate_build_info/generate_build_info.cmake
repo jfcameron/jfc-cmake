@@ -1,5 +1,25 @@
 # © Joseph Cameron - MIT License
 
+#[=======================================================================[.rst:
+jfc_generate_build_info
+-----------------------
+
+.. signature::
+  jfc_generate_build_info([INCLUDE_PATH <vendor>/<module>])
+
+  Generates ``<PROJECT_BINARY_DIR>/generated_include/<vendor>/<module>/build_info.h``, describing the build:
+
+  - the macro ``JFC_TARGET_PLATFORM_<CMAKE_SYSTEM_NAME>``;
+  - ``inline constexpr`` strings in the namespace ``<vendor>::<module>::build_info``: the target platform,
+    project, system, processor, compiler, build flags, CMake version and generator, and the git commit, date
+    and remote.
+
+  Without ``INCLUDE_PATH``, the path comes from the repository's name: ``jfc-cmake`` becomes ``jfc/cmake``.
+  Outside a repository, ``PROJECT_NAME`` stands in for it. Each path segment becomes a valid identifier in
+  the namespace. The header is not written again while nothing in it has changed. Add
+  ``<PROJECT_BINARY_DIR>/generated_include`` to the include directories of whatever includes it.
+#]=======================================================================]
+
 cmake_minimum_required(VERSION 3.21)
 
 include_guard(DIRECTORY)

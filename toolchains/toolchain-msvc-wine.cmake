@@ -1,5 +1,13 @@
 # © Joseph Cameron - MIT License
 
+#[=======================================================================[.rst:
+toolchain-msvc-wine
+-------------------
+
+A toolchain file for MSVC under wine, by msvc-wine, building for x64. It is found at the ``MSVC_WINE_ROOT``
+environment variable, or ``/opt/msvc`` without one. Tests run under wine.
+#]=======================================================================]
+
 if (DEFINED ENV{MSVC_WINE_ROOT})
     set(_msvc_wine_root "$ENV{MSVC_WINE_ROOT}")
 else()

@@ -1,5 +1,19 @@
 # © Joseph Cameron - MIT License
 
+#[=======================================================================[.rst:
+jfc_generate_documentation_doxygen
+----------------------------------
+
+.. signature::
+  jfc_generate_documentation_doxygen(README_PATH <readme> INCLUDE_DIRECTORIES <directory>...
+                                     [PROJECT_LOGO <image>] [EXCLUDE_DIRECTORIES <directory>...])
+
+  Runs Doxygen at configure time, over the include directories with the readme as the main page. HTML is
+  written to ``<CMAKE_BINARY_DIR>/<name of the calling directory>/``. Doxygen's warnings are errors, except
+  for undocumented declarations, which are allowed. The project is named after the git repository, or after
+  ``PROJECT_NAME`` outside one. Needs ``doxygen``; it is a fatal error if Doxygen fails.
+#]=======================================================================]
+
 cmake_minimum_required(VERSION 3.21)
 
 include_guard(DIRECTORY)

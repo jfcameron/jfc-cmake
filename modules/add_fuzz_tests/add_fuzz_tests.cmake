@@ -1,5 +1,29 @@
 # © Joseph Cameron - MIT License
 
+#[=======================================================================[.rst:
+jfc_add_fuzz_tests
+------------------
+
+.. variable:: JFC_BUILD_FUZZERS
+
+  An option, off by default. When it is on, every target in the directory is compiled with the address and
+  undefined behaviour sanitizers and libFuzzer's instrumentation, which needs clang.
+
+.. signature::
+  jfc_add_fuzz_tests(C++_STANDARD <standard> FUZZ_SOURCE_FILES <source>...
+                     [C_STANDARD <standard>] [INCLUDE_DIRECTORIES <directory>...]
+                     [LIBRARIES <library>...] [DEPENDENCIES <target>...]
+                     [CORPUS_DIRECTORIES <directory>...])
+
+  Makes one libFuzzer harness of each source, ``<PROJECT_NAME>_fuzz_<source name>``, and registers each
+  with CTest to run over its corpus once (``-runs=0``), so that every seed becomes a regression test.
+  Does nothing unless :variable:`JFC_BUILD_FUZZERS` is on, and is a fatal error with any compiler but clang.
+
+.. variable:: JFC_FUZZ_TARGETS
+
+  The targets the last :command:`jfc_add_fuzz_tests` made.
+#]=======================================================================]
+
 cmake_minimum_required(VERSION 3.21)
 
 include_guard(DIRECTORY)

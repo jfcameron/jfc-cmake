@@ -1,6 +1,16 @@
 # © Joseph Cameron - MIT License
 
-# cmake -P run-on-android.cmake -- <program> [arguments...]: runs the program on the device adb is connected to
+#[=======================================================================[.rst:
+run-on-android
+--------------
+
+.. code-block:: console
+
+  cmake -P run-on-android.cmake -- <program> [<argument>...]
+
+Pushes a program to the device adb is connected to, runs it there with the arguments, and exits with its
+exit code. adb is found on the ``PATH`` or in the platform-tools of ``ANDROID_HOME`` or ``ANDROID_SDK_ROOT``.
+#]=======================================================================]
 
 set(_jfc_android_program "")
 set(_jfc_android_arguments "")

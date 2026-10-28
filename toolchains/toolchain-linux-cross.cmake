@@ -1,5 +1,25 @@
 # © Joseph Cameron - MIT License
 
+#[=======================================================================[.rst:
+toolchain-linux-cross
+---------------------
+
+A toolchain file for a Debian or Ubuntu gcc cross compiler, ``<triple>-gcc`` and ``<triple>-g++``. Tests run
+under qemu-user when it is installed, and are only built when it is not.
+
+.. variable:: JFC_CROSS_TRIPLE
+
+  Required: the target triple, eg ``arm-linux-gnueabihf``.
+
+.. variable:: JFC_CROSS_SYSROOT
+
+  Where the target's libraries are found. ``/usr/<triple>`` unless given.
+
+.. variable:: JFC_CROSS_QEMU
+
+  The emulator that runs the tests. ``qemu-<architecture>`` unless given.
+#]=======================================================================]
+
 if (NOT JFC_CROSS_TRIPLE)
     message(FATAL_ERROR "toolchain-linux-cross.cmake: set JFC_CROSS_TRIPLE, e.g. arm-linux-gnueabihf")
 endif()

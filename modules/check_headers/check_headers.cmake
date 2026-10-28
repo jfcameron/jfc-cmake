@@ -1,14 +1,27 @@
 # © Joseph Cameron - MIT License
 
+#[=======================================================================[.rst:
+jfc_check_headers
+-----------------
+
+.. signature::
+  jfc_check_headers(<target> [EXCLUDE <header>...])
+
+  Checks that every public header of a target compiles alone, so that a header leaning on whatever its
+  includer happened to include first fails here rather than in a user's code.
+
+  Makes an object library, ``<target>_header_check``, with one source per header found under the target's
+  interface include directories within this source directory. Each source includes only its header, by its
+  public path, and the library links the target, so each compiles as a consumer would. Headers are named in
+  ``EXCLUDE`` by their public path.
+
+  It is a fatal error to name a target that does not exist, or one with no public headers.
+#]=======================================================================]
+
 cmake_minimum_required(VERSION 3.21)
 
 include_guard(DIRECTORY)
 
-# Check that every public header compiles alone.
-# used to catch undefined symbols here, rather than in user code.
-#
-#     jfc_check_headers(<target> [EXCLUDE <header>...])
-#
 function(jfc_check_headers aTarget)
     cmake_parse_arguments(PARSE_ARGV 1 _check "" "" "EXCLUDE")
 

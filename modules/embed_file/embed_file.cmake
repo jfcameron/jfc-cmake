@@ -1,12 +1,21 @@
 # © Joseph Cameron - MIT License
 
+#[=======================================================================[.rst:
+jfc_embed_file
+--------------
+
+.. signature::
+  jfc_embed_file(<symbol> <input file> <output header>)
+
+  Writes a header defining ``static const unsigned char <symbol>[]``, holding the input file's bytes, for
+  shipping a file inside a program. The header is written at configure time, and not again while the file's
+  bytes are unchanged, so nothing that includes it rebuilds needlessly.
+#]=======================================================================]
+
 cmake_minimum_required(VERSION 3.21)
 
 include_guard(DIRECTORY)
 
-# aSymbol: the variable name for the embedded data
-# aPathToInputFile: path to the file to be embedded
-# aPathToOutputFile: path to the generated header file containing the embedded data
 function(jfc_embed_file aSymbol aPathToInputFile aPathToOutputFile)
     file(READ "${aPathToInputFile}" _hex HEX)
     string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1," _bytes "${_hex}")

@@ -1,5 +1,18 @@
 # © Joseph Cameron - MIT License
 
+#[=======================================================================[.rst:
+jfclib
+------
+
+Includes every module of jfc-cmake. A project vendors jfc-cmake as a submodule and includes this one file:
+
+.. code-block:: cmake
+
+  include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/jfc-cmake/jfclib.cmake")
+
+Each module is also usable alone, by including its own file.
+#]=======================================================================]
+
 cmake_minimum_required(VERSION 3.21)
 
 include_guard(DIRECTORY)

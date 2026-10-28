@@ -130,6 +130,22 @@ else()
 endif()
 expect("test sources are compiled unoptimised" ${_ok})
 
+get_target_property(_test_pch ${JFC_TEST_TARGET} PRECOMPILE_HEADERS)
+
+if (_test_pch MATCHES "jfc/catch.hpp")
+    set(_ok TRUE)
+else()
+    set(_ok FALSE)
+endif()
+expect("catch2's header is precompiled, once a test target" ${_ok})
+
+if (_test_options MATCHES "fno-pch-timestamp")
+    set(_ok TRUE)
+else()
+    set(_ok FALSE)
+endif()
+expect("on clang it is built without a timestamp, the same each time" ${_ok})
+
 set(_first_test_target "${JFC_TEST_TARGET}")
 
 jfc_add_tests(
@@ -313,15 +329,17 @@ else()
 endif()
 expect("its constants are snake_case and inline constexpr" ${_ok})
 
-string(REGEX MATCH "random_bits128 = \"([^\"]*)\"" _m "${_buildinfo_text}")
-string(LENGTH "${CMAKE_MATCH_1}" _random_length)
+file(TIMESTAMP "${_buildinfo}" _written "%s")
+execute_process(COMMAND "${CMAKE_COMMAND}" -E sleep 1)
+jfc_generate_build_info(INCLUDE_PATH gdk/probe)
+file(TIMESTAMP "${_buildinfo}" _rewritten "%s")
 
-if (_random_length GREATER_EQUAL 22)
+if (_written STREQUAL _rewritten)
     set(_ok TRUE)
 else()
     set(_ok FALSE)
 endif()
-expect("the random field is long enough to be 128 bits (${_random_length} chars)" ${_ok})
+expect("generated again with nothing changed, it is not written again" ${_ok})
 
 jfc_generate_build_info()
 
@@ -335,6 +353,37 @@ expect("with no arguments the path is derived from the repository name (jfc-cmak
 add_subdirectory(hyphen)
 
 expect("a hyphenated path segment yields compilable identifiers" ${JFC_HYPHEN_PROBE_OK})
+
+message(STATUS "jfc_embed_file")
+
+set(_embedded "${PROJECT_BINARY_DIR}/generated/embedded_probe.h")
+
+jfc_embed_file(EMBEDDED_PROBE "${CMAKE_CURRENT_LIST_DIR}/src/probe.cpp" "${_embedded}")
+
+if (EXISTS "${_embedded}")
+    file(READ "${_embedded}" _embedded_text)
+else()
+    set(_embedded_text "")
+endif()
+
+if (_embedded_text MATCHES "static const unsigned char EMBEDDED_PROBE\\[\\] = {0x")
+    set(_ok TRUE)
+else()
+    set(_ok FALSE)
+endif()
+expect("a file is embedded as an array of its bytes" ${_ok})
+
+file(TIMESTAMP "${_embedded}" _written "%s")
+execute_process(COMMAND "${CMAKE_COMMAND}" -E sleep 1)
+jfc_embed_file(EMBEDDED_PROBE "${CMAKE_CURRENT_LIST_DIR}/src/probe.cpp" "${_embedded}")
+file(TIMESTAMP "${_embedded}" _rewritten "%s")
+
+if (_written STREQUAL _rewritten)
+    set(_ok TRUE)
+else()
+    set(_ok FALSE)
+endif()
+expect("embedded again unchanged, it is not written again" ${_ok})
 
 message(STATUS "jfc_generate_documentation_doxygen")
 

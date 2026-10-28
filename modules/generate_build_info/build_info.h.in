@@ -30,8 +30,6 @@ inline constexpr const char *git_commit     = "@JFC_GIT_COMMIT_HASH@";
 inline constexpr const char *git_date       = "@JFC_GIT_COMMIT_DATE@";
 inline constexpr const char *git_remote_url = "@JFC_GIT_REMOTE_URL@";
 
-inline constexpr const char *random_bits128 = "@JFC_RANDOM_128BITS@";
-
 }
 
 #endif

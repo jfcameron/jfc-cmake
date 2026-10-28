@@ -53,6 +53,12 @@ macro(jfc_add_tests)
 
     target_compile_options(${JFC_TEST_TARGET} PRIVATE $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-O0>)
 
+    target_precompile_headers(${JFC_TEST_TARGET} PRIVATE
+        "$<$<COMPILE_LANGUAGE:CXX>:${JFC_CATCH_INCLUDE_DIRECTORY_ABSOLUTE_PATH}/jfc/catch.hpp>")
+
+    target_compile_options(${JFC_TEST_TARGET} PRIVATE
+        "$<$<COMPILE_LANG_AND_ID:CXX,Clang,AppleClang>:SHELL:-Xclang -fno-pch-timestamp>")
+
     list(LENGTH DEPENDENCIES _dependency_count)
 
     if (_dependency_count GREATER 0)

@@ -5,12 +5,14 @@ jfc_generate_documentation_doxygen
 ----------------------------------
 
 .. signature::
-  jfc_generate_documentation_doxygen(README_PATH <readme> INCLUDE_DIRECTORIES <directory>...
+  jfc_generate_documentation_doxygen(README_PATH <readme> OUTPUT_DIRECTORY <directory>
+                                     INCLUDE_DIRECTORIES <directory>...
                                      [PROJECT_LOGO <image>] [EXCLUDE_DIRECTORIES <directory>...])
 
-  Runs Doxygen at configure time, over the include directories with the readme as the main page. HTML is
-  written to ``<CMAKE_BINARY_DIR>/<name of the calling directory>/``. Doxygen's warnings are errors, except
-  for undocumented declarations, which are allowed. The project is named after the git repository, or after
+  Runs Doxygen at configure time, over the include directories with the readme as the main page, writing
+  the HTML to ``OUTPUT_DIRECTORY``. Relative paths are from the calling directory, and a relative
+  ``OUTPUT_DIRECTORY`` is from its build directory. Doxygen's warnings are errors, except for undocumented
+  declarations, which are allowed. The project is named after the git repository, or after
   ``PROJECT_NAME`` outside one. Needs ``doxygen``; it is a fatal error if Doxygen fails.
 #]=======================================================================]
 
@@ -26,6 +28,7 @@ function(jfc_generate_documentation_doxygen)
     jfc_parse_arguments(${ARGV}
         REQUIRED_SINGLE_VALUES
             README_PATH
+            OUTPUT_DIRECTORY
         REQUIRED_LISTS
             INCLUDE_DIRECTORIES
         SINGLE_VALUES
@@ -38,7 +41,9 @@ function(jfc_generate_documentation_doxygen)
 
     list(JOIN EXCLUDE_DIRECTORIES " " EXCLUDE_DIRECTORIES)
 
-    cmake_path(GET CMAKE_CURRENT_LIST_DIR FILENAME CURRENT_DIR_BASENAME)
+    cmake_path(ABSOLUTE_PATH OUTPUT_DIRECTORY BASE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+
+    file(MAKE_DIRECTORY "${OUTPUT_DIRECTORY}")
 
     execute_process(COMMAND git rev-parse HEAD
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -55,9 +60,9 @@ function(jfc_generate_documentation_doxygen)
     endif()
 
     configure_file(${JFC_DOXY_CONFIG_TEMPLATE_ABSOLUTE_PATH}
-        ${CMAKE_BINARY_DIR}/${CURRENT_DIR_BASENAME}/doxy.config @ONLY)
+        ${CMAKE_CURRENT_BINARY_DIR}/doxy.config @ONLY)
 
-    execute_process(COMMAND "${DOXYGEN_EXECUTABLE}" "${CMAKE_BINARY_DIR}/${CURRENT_DIR_BASENAME}/doxy.config"
+    execute_process(COMMAND "${DOXYGEN_EXECUTABLE}" "${CMAKE_CURRENT_BINARY_DIR}/doxy.config"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         RESULT_VARIABLE DOXYGEN_RETURN_VALUE
         OUTPUT_VARIABLE DOXYGEN_ERRORS)
@@ -65,7 +70,5 @@ function(jfc_generate_documentation_doxygen)
     if (DOXYGEN_RETURN_VALUE)
         message(FATAL_ERROR "jfc_generate_documentation_doxygen: Doxygen failed: ${DOXYGEN_ERRORS}")
     endif()
-        
-    file(REMOVE "${CMAKE_CURRENT_SOURCE_DIR}/${DOXY_CONFIG_FILENAME}")
 endfunction()
 

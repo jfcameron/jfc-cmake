@@ -393,20 +393,21 @@ if (NOT DOXYGEN_EXECUTABLE)
     message(STATUS "  skip doxygen is not installed")
 else()
     jfc_generate_documentation_doxygen(
-        README_PATH  "${CMAKE_CURRENT_LIST_DIR}/README.md"
-        PROJECT_LOGO "${CMAKE_CURRENT_LIST_DIR}/logo.png"
+        README_PATH      "${CMAKE_CURRENT_LIST_DIR}/README.md"
+        OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/any_name"
+        PROJECT_LOGO     "${CMAKE_CURRENT_LIST_DIR}/logo.png"
         INCLUDE_DIRECTORIES
             "${CMAKE_CURRENT_LIST_DIR}/include")
 
-    if (EXISTS "${CMAKE_BINARY_DIR}/integration/doxy.config")
+    if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/doxy.config")
         set(_ok TRUE)
     else()
         set(_ok FALSE)
     endif()
-    expect("the doxy config is written to a directory named after the source directory" ${_ok})
+    expect("the doxy config is written to the calling directory's build directory" ${_ok})
 
     if (_ok)
-        file(READ "${CMAKE_BINARY_DIR}/integration/doxy.config" _doxy)
+        file(READ "${CMAKE_CURRENT_BINARY_DIR}/doxy.config" _doxy)
     else()
         set(_doxy "")
     endif()
@@ -425,12 +426,19 @@ else()
     endif()
     expect("INPUT is a space separated list, not a cmake ;-list" ${_ok})
 
-    if (EXISTS "${CMAKE_BINARY_DIR}/integration/index.html")
+    if (EXISTS "${CMAKE_BINARY_DIR}/any_name/index.html")
         set(_ok TRUE)
     else()
         set(_ok FALSE)
     endif()
-    expect("doxygen produced html" ${_ok})
+    expect("the html is written to OUTPUT_DIRECTORY" ${_ok})
+
+    if (NOT EXISTS "${CMAKE_BINARY_DIR}/any_name/doxy.config")
+        set(_ok TRUE)
+    else()
+        set(_ok FALSE)
+    endif()
+    expect("OUTPUT_DIRECTORY holds nothing but the site" ${_ok})
 
     set(_nogit "${CMAKE_CURRENT_BINARY_DIR}/nogit_probe")
 
@@ -441,20 +449,19 @@ else()
     if (_enclosing_repo EQUAL 0)
         message(STATUS "  skip the binary directory is inside a git repository")
     else()
-        file(MAKE_DIRECTORY "${_nogit}/include" "${_nogit}/docs")
+        file(MAKE_DIRECTORY "${_nogit}/include")
         file(WRITE "${_nogit}/README.md" "# probe\n\ntext\n")
         file(WRITE "${_nogit}/include/thing.h" "namespace probe { /// doc\nstruct thing { int x; };\n}\n")
-        file(WRITE "${_nogit}/docs/icon.png" "")
-        file(WRITE "${_nogit}/docs/CMakeLists.txt"
-            "jfc_generate_documentation_doxygen(\n"
-            "    PROJECT_LOGO \"\${CMAKE_CURRENT_LIST_DIR}/icon.png\"\n"
-            "    README_PATH \"\${CMAKE_SOURCE_DIR}/README.md\"\n"
-            "    INCLUDE_DIRECTORIES \"\${CMAKE_SOURCE_DIR}/include\")\n")
+        file(WRITE "${_nogit}/logo.png" "")
         file(WRITE "${_nogit}/CMakeLists.txt"
             "cmake_minimum_required(VERSION 3.21)\n"
             "project(tarball_probe)\n"
             "include(\"${CMAKE_CURRENT_LIST_DIR}/../../jfclib.cmake\")\n"
-            "add_subdirectory(docs)\n")
+            "jfc_generate_documentation_doxygen(\n"
+            "    PROJECT_LOGO \"\${CMAKE_CURRENT_LIST_DIR}/logo.png\"\n"
+            "    README_PATH README.md\n"
+            "    OUTPUT_DIRECTORY site\n"
+            "    INCLUDE_DIRECTORIES include/)\n")
 
         execute_process(
             COMMAND "${CMAKE_COMMAND}" -S "${_nogit}" -B "${_nogit}/out" -Wno-deprecated
@@ -468,7 +475,14 @@ else()
         endif()
         expect("documentation generates outside a git repository" ${_ok})
 
-        file(READ "${_nogit}/out/docs/doxy.config" _nogit_doxy)
+        if (EXISTS "${_nogit}/out/site/index.html" AND NOT EXISTS "${_nogit}/site")
+            set(_ok TRUE)
+        else()
+            set(_ok FALSE)
+        endif()
+        expect("a relative OUTPUT_DIRECTORY is in the build, not the source" ${_ok})
+
+        file(READ "${_nogit}/out/doxy.config" _nogit_doxy)
 
         if (_nogit_doxy MATCHES "PROJECT_NAME[ \t]*=[ \t]*tarball_probe")
             set(_ok TRUE)
@@ -477,10 +491,14 @@ else()
         endif()
         expect("with no repository the project name stands in for the repo name" ${_ok})
 
-        file(WRITE "${_nogit}/docs/CMakeLists.txt"
+        file(WRITE "${_nogit}/CMakeLists.txt"
+            "cmake_minimum_required(VERSION 3.21)\n"
+            "project(tarball_probe)\n"
+            "include(\"${CMAKE_CURRENT_LIST_DIR}/../../jfclib.cmake\")\n"
             "jfc_generate_documentation_doxygen(\n"
-            "    README_PATH \"\${CMAKE_SOURCE_DIR}/README.md\"\n"
-            "    INCLUDE_DIRECTORIES \"\${CMAKE_SOURCE_DIR}/include\")\n")
+            "    README_PATH README.md\n"
+            "    OUTPUT_DIRECTORY site\n"
+            "    INCLUDE_DIRECTORIES include/)\n")
 
         execute_process(
             COMMAND "${CMAKE_COMMAND}" -S "${_nogit}" -B "${_nogit}/out_nologo" -Wno-deprecated
@@ -503,6 +521,26 @@ else()
             set(_ok FALSE)
         endif()
         expect("and doxygen still produced html without one" ${_ok})
+
+        file(WRITE "${_nogit}/CMakeLists.txt"
+            "cmake_minimum_required(VERSION 3.21)\n"
+            "project(tarball_probe)\n"
+            "include(\"${CMAKE_CURRENT_LIST_DIR}/../../jfclib.cmake\")\n"
+            "jfc_generate_documentation_doxygen(\n"
+            "    README_PATH README.md\n"
+            "    INCLUDE_DIRECTORIES include/)\n")
+
+        execute_process(
+            COMMAND "${CMAKE_COMMAND}" -S "${_nogit}" -B "${_nogit}/out_nowhere" -Wno-deprecated
+            RESULT_VARIABLE _nowhere_result OUTPUT_QUIET ERROR_VARIABLE _nowhere_error)
+
+        if (NOT _nowhere_result EQUAL 0 AND _nowhere_error MATCHES "\"OUTPUT_DIRECTORY\" is missing")
+            set(_ok TRUE)
+        else()
+            set(_ok FALSE)
+            message(STATUS "       ${_nowhere_error}")
+        endif()
+        expect("OUTPUT_DIRECTORY is required, so the module picks no place itself" ${_ok})
     endif()
 endif()
 

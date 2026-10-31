@@ -6,7 +6,7 @@
 # Substituted by cmake
 #---------------------------------------------------------------------------
 EXCLUDE                = @EXCLUDE_DIRECTORIES@
-HTML_OUTPUT            = @CMAKE_BINARY_DIR@/@CURRENT_DIR_BASENAME@/
+HTML_OUTPUT            = @OUTPUT_DIRECTORY@/
 INPUT                  = @README_PATH@ @INCLUDE_DIRECTORIES@
 PROJECT_LOGO           = @PROJECT_LOGO@
 PROJECT_NAME           = @GIT_REPO_NAME@

@@ -578,6 +578,228 @@ else()
     endif()
 endif()
 
+message(STATUS "jfc_publish")
+
+# built: a little C program, published, with a file of its project's own and a licence to notice; it loads a shared
+# library of the project's, which the folder has to carry: on Windows from a directory of its own, found by
+# LIBRARY_DIRECTORIES (unless UNFOUND). Each case configures it again and publishes it
+set(_published "${CMAKE_CURRENT_BINARY_DIR}/publish_probe")
+
+file(WRITE "${_published}/greeting.c"
+    "#ifdef _WIN32\n"
+    "__declspec(dllexport)\n"
+    "#endif\n"
+    "const char *greeting(void) { return \"probe ran\"; }\n")
+file(WRITE "${_published}/probe.c"
+    "#include <stdio.h>\n"
+    "const char *greeting(void);\n"
+    "int main(int argc, char **argv) {\n"
+    "    if (argc > 1 && argv[1][0] == 'f') return 3;\n"
+    "    puts(greeting());\n"
+    "    return 0;\n"
+    "}\n")
+file(WRITE "${_published}/data.txt" "a project's own file\n")
+file(WRITE "${_published}/extern/thing/LICENSE" "The thing licence, word for word.\n")
+file(WRITE "${_published}/extern/thing/tests/LICENSE" "A test's licence, never noticed.\n")
+file(WRITE "${_published}/check.cmake" "file(WRITE \"\${MARKER}\" \"\${unpacked}\")\n")
+file(WRITE "${_published}/CMakeLists.txt"
+    "cmake_minimum_required(VERSION 3.21)\n"
+    "project(publish_probe C)\n"
+    "include(\"${CMAKE_CURRENT_LIST_DIR}/../../jfclib.cmake\")\n"
+    "set(_asked \"\")\n"
+    "if (CMAKE_SYSTEM_NAME STREQUAL \"Linux\" OR WIN32)\n"
+    "    add_library(greeting SHARED greeting.c)\n"
+    "else()\n"
+    "    add_library(greeting STATIC greeting.c)\n"
+    "endif()\n"
+    "if (WIN32)\n"
+    "    set_target_properties(greeting PROPERTIES RUNTIME_OUTPUT_DIRECTORY \"$<1:\${CMAKE_BINARY_DIR}/elsewhere>\")\n"
+    "    if (NOT UNFOUND)\n"
+    "        list(APPEND _asked LIBRARY_DIRECTORIES \"\${CMAKE_BINARY_DIR}/elsewhere\")\n"
+    "    endif()\n"
+    "endif()\n"
+    "add_executable(probe probe.c)\n"
+    "target_link_libraries(probe PRIVATE greeting)\n"
+    "install(FILES data.txt DESTINATION . COMPONENT probe)\n"
+    "if (SAYS)\n"
+    "    list(APPEND _asked RUN_SAYS \"\${SAYS}\")\n"
+    "endif()\n"
+    "if (FLOOR)\n"
+    "    list(APPEND _asked GLIBC \"\${FLOOR}\")\n"
+    "endif()\n"
+    "jfc_publish(NAME probe VERSION 1.2 PLATFORM here PROGRAMS probe RUN \${RUN} \${_asked}\n"
+    "    NOTICES \"\${CMAKE_CURRENT_SOURCE_DIR}/extern\" CHECK check.cmake CHECK_DEFINITIONS \"MARKER=\${MARKER}\")\n")
+
+set(_marker "${_published}/checked")
+
+# configures and publishes it: RUN, RUN_SAYS and GLIBC as given, and UNFOUND if a fourth is. The result, and what was
+# said
+function(_publish_probe aRun aSays aFloor)
+    file(REMOVE "${_marker}")
+
+    # built as this is: for another machine too, if this is
+    set(_as_this "")
+
+    foreach (passed CMAKE_TOOLCHAIN_FILE JFC_CROSS_TRIPLE)
+        if (DEFINED ${passed})
+            list(APPEND _as_this "-D${passed}=${${passed}}")
+        endif()
+    endforeach()
+
+    execute_process(
+        COMMAND "${CMAKE_COMMAND}" -S "${_published}" -B "${_published}/out" -Wno-deprecated ${_as_this}
+            -DCMAKE_BUILD_TYPE=Release "-DRUN=${aRun}" "-DSAYS=${aSays}" "-DFLOOR=${aFloor}" "-DUNFOUND=${ARGV3}" "-DMARKER=${_marker}"
+        RESULT_VARIABLE _configured OUTPUT_VARIABLE _said ERROR_VARIABLE _said)
+
+    if (_configured EQUAL 0)
+        execute_process(COMMAND "${CMAKE_COMMAND}" --build "${_published}/out" --target probe_publish --config Release
+            RESULT_VARIABLE _configured OUTPUT_VARIABLE _said ERROR_VARIABLE _said)
+    endif()
+
+    set(_publish_result "${_configured}" PARENT_SCOPE)
+    set(_publish_said "${_said}" PARENT_SCOPE)
+endfunction()
+
+if (CMAKE_CROSSCOMPILING AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    _publish_probe("probe" "" "")
+
+    if (NOT _publish_result EQUAL 0 AND _publish_said MATCHES "not cross built")
+        set(_ok TRUE)
+    else()
+        set(_ok FALSE)
+    endif()
+    expect("a cross built Linux program is refused, as this machine can't run it" ${_ok})
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR WIN32)
+    _publish_probe("probe" "probe ran" "")
+
+    if (_publish_result EQUAL 0)
+        set(_ok TRUE)
+    else()
+        set(_ok FALSE)
+        message(STATUS "       ${_publish_said}")
+    endif()
+    expect("a program is published, its zip checked, and run from it" ${_ok})
+
+    set(_zip "${_published}/out/publish/probe-1.2-here.zip")
+
+    if (EXISTS "${_zip}")
+        file(ARCHIVE_EXTRACT INPUT "${_zip}" DESTINATION "${_published}/unzipped")
+        set(_folder "${_published}/unzipped/probe-1.2-here")
+        file(GLOB_RECURSE _carried RELATIVE "${_folder}" "${_folder}/*")
+    else()
+        set(_carried "")
+    endif()
+
+    if (("probe" IN_LIST _carried OR "probe.exe" IN_LIST _carried) AND "data.txt" IN_LIST _carried
+            AND "THIRD_PARTY_NOTICES.txt" IN_LIST _carried)
+        set(_ok TRUE)
+    else()
+        set(_ok FALSE)
+    endif()
+    expect("its folder, named for it, has the program, the project's own file and the notices (${_carried})" ${_ok})
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        if (_carried MATCHES "lib/libgreeting\\.so")
+            set(_ok TRUE)
+        else()
+            set(_ok FALSE)
+        endif()
+        expect("on Linux, the shared library it loads is carried in lib/" ${_ok})
+    else()
+        if (_carried MATCHES "(^|;)greeting\\.dll(;|$)")
+            set(_ok TRUE)
+        else()
+            set(_ok FALSE)
+        endif()
+        expect("on Windows, the DLL it loads, from LIBRARY_DIRECTORIES, is beside it" ${_ok})
+    endif()
+
+    if (EXISTS "${_folder}/THIRD_PARTY_NOTICES.txt")
+        file(READ "${_folder}/THIRD_PARTY_NOTICES.txt" _notices)
+    else()
+        set(_notices "")
+    endif()
+
+    if (_notices MATCHES "The thing licence, word for word." AND _notices MATCHES "extern/thing" AND NOT _notices MATCHES "A test's")
+        set(_ok TRUE)
+    else()
+        set(_ok FALSE)
+    endif()
+    expect("the notices have each licence with where it came from, and none of a test's" ${_ok})
+
+    if (EXISTS "${_marker}")
+        file(READ "${_marker}" _checked_in)
+    else()
+        set(_checked_in "")
+    endif()
+
+    if (_checked_in MATCHES "probe-1\\.2-here$")
+        set(_ok TRUE)
+    else()
+        set(_ok FALSE)
+    endif()
+    expect("the project's own check runs, on the unpacked folder, with its definitions" ${_ok})
+
+    _publish_probe("probe;fail" "" "")
+
+    if (NOT _publish_result EQUAL 0 AND _publish_said MATCHES "didn't run from the zip")
+        set(_ok TRUE)
+    else()
+        set(_ok FALSE)
+    endif()
+    expect("a program that fails from the zip fails the publish" ${_ok})
+
+    _publish_probe("probe" "something else" "")
+
+    if (NOT _publish_result EQUAL 0 AND _publish_said MATCHES "didn't say something else")
+        set(_ok TRUE)
+    else()
+        set(_ok FALSE)
+    endif()
+    expect("and one that doesn't say what it should" ${_ok})
+
+    if (WIN32)
+        _publish_probe("probe" "" "" ON)
+
+        if (NOT _publish_result EQUAL 0 AND _publish_said MATCHES "greeting\\.dll \\(probe\\.exe\\)")
+            set(_ok TRUE)
+        else()
+            set(_ok FALSE)
+        endif()
+        expect("on Windows, a DLL found nowhere it's looked for fails the publish" ${_ok})
+    endif()
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        _publish_probe("probe" "" "2.0")
+
+        if (NOT _publish_result EQUAL 0 AND _publish_said MATCHES "newer than glibc 2.0")
+            set(_ok TRUE)
+        else()
+            set(_ok FALSE)
+        endif()
+        expect("on Linux, a program asking for a newer glibc than the floor fails it" ${_ok})
+
+        _publish_probe("probe" "" "99")
+
+        if (_publish_result EQUAL 0)
+            set(_ok TRUE)
+        else()
+            set(_ok FALSE)
+            message(STATUS "       ${_publish_said}")
+        endif()
+        expect("and with a floor it's within, it publishes" ${_ok})
+    endif()
+else()
+    _publish_probe("probe" "" "")
+
+    if (NOT _publish_result EQUAL 0 AND _publish_said MATCHES "programs are published for Linux and Windows")
+        set(_ok TRUE)
+    else()
+        set(_ok FALSE)
+    endif()
+    expect("programs are refused where they aren't published (${CMAKE_SYSTEM_NAME})" ${_ok})
+endif()
+
 message(STATUS "")
 
 if (_failures GREATER 0)

@@ -1,6 +1,6 @@
 # jfc-cmake
 
-CMake modules shared by the C++ projects on this account: Catch2 test targets, fuzz harnesses, header checks, embedded files, build info, Doxygen, and toolchains for cross compiling.
+CMake modules shared by the C++ projects on this account: Catch2 test targets, fuzz harnesses, header checks, embedded files, build info, Doxygen, publishing (a program's folder for people to unzip and run, zipped and checked, with a glibc floor for Linux), and toolchains for cross compiling.
 
 Reference documentation: https://jfcameron.github.io/jfc-cmake/
 

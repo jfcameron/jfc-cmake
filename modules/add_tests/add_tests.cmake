@@ -14,7 +14,8 @@ Including this module enables testing for the directory, unless CMake is running
   Makes a Catch2 test executable of the sources and registers it with CTest.
 
   - **Naming:** the target is named ``<PROJECT_NAME>_test_<n>``, where ``<n>`` counts the test targets made in
-    the directory scope. The name is published as :variable:`JFC_TEST_TARGET`.
+    the project, in every directory of it, so two directories never make the same name. The name is published as
+    :variable:`JFC_TEST_TARGET`.
   - **Standards:** the C++ standard is required, not merely requested. The C standard is set only when given.
   - **Catch2:** its main is a static library, ``jfc_catch_main``, compiled once and linked by every test target.
     Its header is precompiled, and on clang the precompiled header carries no timestamp, so it is the same
@@ -34,8 +35,6 @@ include_guard(DIRECTORY)
 set(JFC_CATCH_CONFIG_ABSOLUTE_PATH ${CMAKE_CURRENT_LIST_DIR}/catchconfig.cpp)
 set(JFC_CATCH_INCLUDE_DIRECTORY_ABSOLUTE_PATH ${CMAKE_CURRENT_LIST_DIR}/include)
 
-set(JFC_TEST_NAME_COUNTER 0)
-
 if (NOT CMAKE_SCRIPT_MODE_FILE)
     enable_testing()
 endif()
@@ -54,9 +53,17 @@ macro(jfc_add_tests)
             TEST_SOURCE_FILES
     )
 
-    set(JFC_TEST_TARGET "${PROJECT_NAME}_test_${JFC_TEST_NAME_COUNTER}")
+    get_property(_jfc_test_count GLOBAL PROPERTY "JFC_TEST_COUNT_${PROJECT_NAME}")
 
-    math(EXPR JFC_TEST_NAME_COUNTER "${JFC_TEST_NAME_COUNTER}+1")
+    if (NOT _jfc_test_count)
+        set(_jfc_test_count 0)
+    endif()
+
+    set(JFC_TEST_TARGET "${PROJECT_NAME}_test_${_jfc_test_count}")
+
+    math(EXPR _jfc_test_count "${_jfc_test_count}+1")
+
+    set_property(GLOBAL PROPERTY "JFC_TEST_COUNT_${PROJECT_NAME}" "${_jfc_test_count}")
 
     if (NOT TARGET jfc_catch_main)
         add_library(jfc_catch_main STATIC "${JFC_CATCH_CONFIG_ABSOLUTE_PATH}")

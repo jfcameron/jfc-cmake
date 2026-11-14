@@ -168,6 +168,40 @@ else()
 endif()
 expect("a second test target links the same main, compiled once" ${_ok})
 
+set(_siblings "${CMAKE_CURRENT_BINARY_DIR}/sibling_probes")
+
+foreach (_sibling first second)
+    file(WRITE "${_siblings}/${_sibling}/CMakeLists.txt"
+        "jfc_add_tests(C++_STANDARD 20 TEST_SOURCE_FILES \"${CMAKE_CURRENT_LIST_DIR}/test/probe_test.cpp\" LIBRARIES probe)\n"
+        "set(JFC_SIBLING_${_sibling} \"\${JFC_TEST_TARGET}\" PARENT_SCOPE)\n")
+
+    add_subdirectory("${_siblings}/${_sibling}" "${_siblings}/${_sibling}_out")
+endforeach()
+
+if (TARGET "${JFC_SIBLING_first}" AND TARGET "${JFC_SIBLING_second}"
+    AND NOT JFC_SIBLING_first STREQUAL JFC_SIBLING_second)
+    set(_ok TRUE)
+else()
+    set(_ok FALSE)
+endif()
+expect("two directories of one project make differently named test targets (${JFC_SIBLING_first}, ${JFC_SIBLING_second})" ${_ok})
+
+jfc_add_tests(
+    C++_STANDARD 20
+
+    TEST_SOURCE_FILES
+        "${CMAKE_CURRENT_LIST_DIR}/test/probe_test.cpp"
+
+    LIBRARIES
+        probe)
+
+if (TARGET "${JFC_TEST_TARGET}" AND NOT JFC_TEST_TARGET STREQUAL JFC_SIBLING_second)
+    set(_ok TRUE)
+else()
+    set(_ok FALSE)
+endif()
+expect("and a test target made after them counts on from theirs (${JFC_TEST_TARGET})" ${_ok})
+
 message(STATUS "jfc_check_headers")
 
 jfc_check_headers(probe)

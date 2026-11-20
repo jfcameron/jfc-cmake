@@ -31,7 +31,10 @@ jfc_publish
     InstallRequiredSystemLibraries finds it.
 
   A library is looked for where the build put it (beside the program, or where Linux's linker recorded), then in
-  ``LIBRARY_DIRECTORIES``: a Windows DLL that isn't the project's own, which nothing records the way of, is found there.
+  ``LIBRARY_DIRECTORIES``: a Windows DLL that isn't the project's own, which nothing records the way of, is found there,
+  or one of the project's own built elsewhere than beside the program. A DLL is matched by its name whatever its case,
+  as Windows does, cross built from a machine whose files' names aren't (``OpenAL32.dll`` asked for as
+  ``openal32.dll``).
 
   ``NOTICES`` gathers the licence files (``LICENSE*``, ``COPYING*``) under each directory into the folder's
   ``THIRD_PARTY_NOTICES.txt``, each text once, with where it came from: but those under what isn't built into what's
@@ -57,6 +60,15 @@ jfc_publish
   are linked with ``glibc_wraps.c`` for what the C++ library calls that's newer, which wants the preset's
   ``-static-libstdc++ -static-libgcc``. Libraries built some other way (by their own configure script) aren't
   compiled with the header: build them against an older glibc, or leave ``GLIBC`` out.
+
+jfc_publish_notices
+-------------------
+
+.. signature::
+  jfc_publish_notices(OUTPUT <file> DIRECTORIES <directory>... [EXCLUDE <regex>...])
+
+  The ``THIRD_PARTY_NOTICES.txt`` that ``jfc_publish``'s ``NOTICES`` and ``NOTICES_EXCLUDE`` make, written to
+  ``OUTPUT`` as the project is configured: for a package ``jfc_publish`` doesn't make, an Android APK, say.
 #]=======================================================================]
 
 cmake_minimum_required(VERSION 3.21)
@@ -146,9 +158,11 @@ function(jfc_publish)
     string(REPLACE ";" "\" \"" _executables "${_executables}")
 
     if (LIBRARY_DIRECTORIES)
-        string(REPLACE ";" "\" \"" _directories "${LIBRARY_DIRECTORIES}")
-        set(_directories "DIRECTORIES \"${_directories}\"")
+        string(REPLACE ";" "\" \"" _searched "${LIBRARY_DIRECTORIES}")
+        set(_searched "\"${_searched}\"")
+        set(_directories "DIRECTORIES ${_searched}")
     else()
+        set(_searched "")
         set(_directories "")
     endif()
 
@@ -228,6 +242,25 @@ function(jfc_publish)
                 PRE_EXCLUDE_REGEXES \"^[Aa][Pp][Ii]-[Mm][Ss]-\" \"^[Ee][Xx][Tt]-[Mm][Ss]-\"
                 POST_EXCLUDE_REGEXES \"^[A-Za-z]:[/\\\\\\\\][Ww][Ii][Nn][Dd][Oo][Ww][Ss][/\\\\\\\\]\")
 
+            # Windows' names are any case, and CMake looks for them in lower case: on a host whose files' names aren't
+            # (Linux, cross building), a DLL named with capitals (OpenAL32.dll) is matched by name here, case aside
+            foreach (_wanted IN LISTS _unresolved)
+                string(TOLOWER \"\${_wanted}\" _wanted)
+
+                foreach (_directory IN ITEMS ${_searched})
+                    file(GLOB _candidates \"\${_directory}/*.[Dd][Ll][Ll]\")
+
+                    foreach (_candidate IN LISTS _candidates)
+                        get_filename_component(_file \"\${_candidate}\" NAME)
+                        string(TOLOWER \"\${_file}\" _file)
+
+                        if (_file STREQUAL _wanted)
+                            list(APPEND _resolved \"\${_candidate}\")
+                        endif()
+                    endforeach()
+                endforeach()
+            endforeach()
+
             if (_resolved)
                 file(INSTALL \${_resolved} DESTINATION \"\${CMAKE_INSTALL_PREFIX}\")
             endif()
@@ -285,6 +318,15 @@ function(jfc_publish)
     if (PROGRAMS)
         add_dependencies("${TARGET}" ${PROGRAMS})
     endif()
+endfunction()
+
+function(jfc_publish_notices)
+    jfc_parse_arguments(${ARGV}
+        REQUIRED_SINGLE_VALUES OUTPUT
+        REQUIRED_LISTS DIRECTORIES
+        LISTS EXCLUDE)
+
+    _jfc_publish_notices("${OUTPUT}" "${DIRECTORIES}" "${EXCLUDE}")
 endfunction()
 
 # each licence text once, with every place it came from

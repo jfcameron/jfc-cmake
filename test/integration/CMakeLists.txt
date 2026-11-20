@@ -601,6 +601,7 @@ file(WRITE "${_published}/probe.c"
 file(WRITE "${_published}/data.txt" "a project's own file\n")
 file(WRITE "${_published}/extern/thing/LICENSE" "The thing licence, word for word.\n")
 file(WRITE "${_published}/extern/thing/tests/LICENSE" "A test's licence, never noticed.\n")
+file(WRITE "${_published}/extern/other/COPYING" "The other licence, excluded by name.\n")
 file(WRITE "${_published}/check.cmake" "file(WRITE \"\${MARKER}\" \"\${unpacked}\")\n")
 file(WRITE "${_published}/CMakeLists.txt"
     "cmake_minimum_required(VERSION 3.21)\n"
@@ -628,7 +629,8 @@ file(WRITE "${_published}/CMakeLists.txt"
     "    list(APPEND _asked GLIBC \"\${FLOOR}\")\n"
     "endif()\n"
     "jfc_publish(NAME probe VERSION 1.2 PLATFORM here PROGRAMS probe RUN \${RUN} \${_asked}\n"
-    "    NOTICES \"\${CMAKE_CURRENT_SOURCE_DIR}/extern\" CHECK check.cmake CHECK_DEFINITIONS \"MARKER=\${MARKER}\")\n")
+    "    NOTICES \"\${CMAKE_CURRENT_SOURCE_DIR}/extern\" NOTICES_EXCLUDE \"^other/\" CHECK check.cmake CHECK_DEFINITIONS \"MARKER=\${MARKER}\")\n"
+    "jfc_publish_notices(OUTPUT \"\${CMAKE_BINARY_DIR}/own_notices.txt\" DIRECTORIES \"\${CMAKE_CURRENT_SOURCE_DIR}/extern\")\n")
 
 set(_marker "${_published}/checked")
 
@@ -726,6 +728,26 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR WIN32)
         set(_ok FALSE)
     endif()
     expect("the notices have each licence with where it came from, and none of a test's" ${_ok})
+
+    if (NOT _notices MATCHES "The other licence")
+        set(_ok TRUE)
+    else()
+        set(_ok FALSE)
+    endif()
+    expect("a licence NOTICES_EXCLUDE names is left out" ${_ok})
+
+    if (EXISTS "${_published}/out/own_notices.txt")
+        file(READ "${_published}/out/own_notices.txt" _own)
+    else()
+        set(_own "")
+    endif()
+
+    if (_own MATCHES "The thing licence, word for word." AND _own MATCHES "The other licence" AND NOT _own MATCHES "A test's")
+        set(_ok TRUE)
+    else()
+        set(_ok FALSE)
+    endif()
+    expect("jfc_publish_notices writes the same notices for a package of a project's own, at configure" ${_ok})
 
     if (EXISTS "${_marker}")
         file(READ "${_marker}" _checked_in)
